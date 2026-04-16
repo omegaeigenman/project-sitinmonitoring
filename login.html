@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — CCS Sit-in Monitoring</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">
+      <img src="CCS.png" alt="CCS Logo" class="nav-logo" onerror="this.style.display='none'"/>
+      <span class="nav-title">College of Computer Studies Sit-in Monitoring System</span>
+    </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle">Community <span class="caret">▾</span></a>
+        <ul class="dropdown-menu">
+          <li><a href="#">Forums</a></li>
+          <li><a href="#">Announcements</a></li>
+          <li><a href="#">Events</a></li>
+        </ul>
+      </li>
+      <li><a href="#">About</a></li>
+      <li><a href="login.html" class="active">Login</a></li>
+      <li><a href="register.html">Register</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="login-page">
+    <div class="login-logo-side">
+      <img src="CCS.png" alt="CCS Logo" class="login-big-logo" onerror="this.style.display='none'"/>
+    </div>
+    <div class="login-form-side">
+      <div class="login-field-group">
+        <input type="text" class="login-input" id="loginId" placeholder="Enter a valid id number"/>
+        <label class="login-field-label">ID Number</label>
+      </div>
+      <div class="login-field-group">
+        <div class="pw-wrap">
+          <input type="password" class="login-input" id="loginPass" placeholder="Enter password"/>
+          <button class="pw-toggle" type="button" onclick="togglePass('loginPass',this)">&#128065;</button>
+        </div>
+        <label class="login-field-label">Password</label>
+      </div>
+      <div class="login-options">
+        <label class="check-label"><input type="checkbox"/> Remember me</label>
+        <a href="#" class="forgot-link">Forgot password?</a>
+      </div>
+      <button class="login-btn" onclick="handleLogin()">Login</button>
+      <p class="login-register-text">Don't have an account? <a href="register.html" class="link-accent">Register</a></p>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="successModal">
+    <div class="modal-box">
+      <div class="modal-check">&#10003;</div>
+      <h2 class="modal-title">Successful Login!</h2>
+      <p class="modal-msg" id="modalMsg"></p>
+      <button class="modal-ok" id="modalOkBtn">OK</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    if (sessionGet()) window.location.href = 'dashboard.html';
+  //  if (localStorage.getItem('ccs_admin_session') === '1') window.location.href = 'admin_dashboard.html';
+
+    let dbReady = false;
+    initDB().then(() => { dbReady = true; });
+
+    function handleLogin() {
+      if (!dbReady) { showToast('Loading, please try again.', 'error'); return; }
+      const id   = val('loginId');
+      const pass = val('loginPass');
+      if (!id || !pass) { showToast('Please enter your ID and password.', 'error'); return; }
+
+      if (id === 'admin' && pass === 'admin123') {
+        localStorage.setItem('ccs_admin_session', '1');
+        document.getElementById('modalMsg').textContent = 'Welcome, Admin!';
+        document.getElementById('modalOkBtn').onclick = () => window.location.href = 'admin_dashboard.html';
+        openModal('successModal');
+        return;
+      }
+
+      const student = dbLogin(id, pass);
+      if (!student) { showToast('Invalid ID Number or Password.', 'error'); return; }
+      sessionSet(student);
+      localStorage.setItem('ccs_show_modal', '1');
+      const name = [student.firstname, student.midname, student.lastname].filter(Boolean).join(' ');
+      document.getElementById('modalMsg').textContent = `Welcome! ${name}`;
+      document.getElementById('modalOkBtn').onclick = () => window.location.href = 'dashboard.html';
+      openModal('successModal');
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+  </script>
+</body>
+</html>

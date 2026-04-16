@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Students — CCS Admin</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="admin.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body class="admin-body">
+
+  <nav class="navbar admin-navbar">
+    <div class="admin-nav-brand">
+      <img src="CCS.png" alt="CCS" class="admin-logo" onerror="this.style.display='none'"/>
+      <span class="admin-brand">College of Computer Studies Admin</span>
+    </div>
+    <ul class="nav-links admin-nav" id="navLinks">
+      <li><a href="admin_dashboard.html">Home</a></li>
+      <li><a href="#" onclick="openModal('searchModal');return false;">Search</a></li>
+      <li><a href="admin_students.html" class="active">Students</a></li>
+      <li><a href="admin_sitin.html">Sit-in</a></li>
+      <li><a href="admin_sitin_records.html">View Sit-in Records</a></li>
+      <li><a href="admin_reports.html">Sit-in Reports</a></li>
+      <li><a href="admin_feedback.html">Feedback Reports</a></li>
+      <li><a href="admin_reservation.html">Reservation</a></li>
+      <li><a href="admin_leaderboard.html">Leaderboard</a></li>
+      <li><a href="admin_analytics.html">Analytics</a></li>
+      <li><a href="admin_rewards.html">Add Reward/Points</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="adminLogout();return false;">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="admin-main">
+    <h2 class="admin-page-title">Students Information</h2>
+    <div class="admin-table-toolbar">
+      <div style="display:flex;gap:0.6rem;align-items:center;">
+        <button class="admin-btn-blue" onclick="openModal('addModal')">Add Students</button>
+        <button class="admin-btn-red" onclick="confirmResetAll()">Reset All Session</button>
+      </div>
+      <div class="table-search-wrap">
+        Search: <input type="text" class="table-search-input" id="tblSearch" oninput="filterTable('studentsBody','tblSearch')"/>
+      </div>
+    </div>
+    <div style="margin-bottom:0.6rem;font-size:0.88rem;">
+      <select class="form-input form-select" style="width:65px;display:inline-block;padding:0.28rem 0.5rem;">
+        <option>10</option><option>25</option><option>50</option>
+      </select> entries per page
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID Number &#8597;</th><th>Name &#8597;</th><th>Year Level &#8597;</th>
+            <th>Course &#8597;</th><th>Remaining Session &#8597;</th><th>Actions &#8597;</th>
+          </tr>
+        </thead>
+        <tbody id="studentsBody"></tbody>
+      </table>
+    </div>
+    <div class="table-info" id="tblInfo"></div>
+  </div>
+
+  <!-- Add Modal -->
+  <div class="modal-overlay" id="addModal">
+    <div class="modal-box form-modal-box">
+      <div class="modal-header-row">
+        <h3 class="modal-inner-title">Add Student</h3>
+        <button class="modal-close-x" onclick="closeModal('addModal')">&#x2715;</button>
+      </div>
+      <div class="admin-form-grid">
+        <div class="form-group"><label class="form-label">ID Number*</label><input class="form-input" id="aId"/></div>
+        <div class="form-group"><label class="form-label">First Name*</label><input class="form-input" id="aFirst"/></div>
+        <div class="form-group"><label class="form-label">Last Name*</label><input class="form-input" id="aLast"/></div>
+        <div class="form-group"><label class="form-label">Middle Name</label><input class="form-input" id="aMiddle"/></div>
+        <div class="form-group"><label class="form-label">Course*</label>
+          <select class="form-input form-select" id="aCourse"><option value="" disabled selected>Select</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Year Level*</label>
+          <select class="form-input form-select" id="aYear">
+            <option value="" disabled selected>Select</option>
+            <option value="1">1st Year</option><option value="2">2nd Year</option>
+            <option value="3">3rd Year</option><option value="4">4th Year</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Email*</label><input class="form-input" id="aEmail" type="email"/></div>
+        <div class="form-group"><label class="form-label">Address*</label><input class="form-input" id="aAddress"/></div>
+        <div class="form-group"><label class="form-label">Username*</label><input class="form-input" id="aUsername"/></div>
+        <div class="form-group"><label class="form-label">Password*</label><input class="form-input" id="aPass" type="password"/></div>
+      </div>
+      <div class="modal-footer-row">
+        <button class="admin-btn-blue" onclick="submitAdd()">Add</button>
+        <button class="admin-btn-gray" onclick="closeModal('addModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-box form-modal-box">
+      <div class="modal-header-row">
+        <h3 class="modal-inner-title">Edit Student</h3>
+        <button class="modal-close-x" onclick="closeModal('editModal')">&#x2715;</button>
+      </div>
+      <div class="admin-form-grid">
+        <div class="form-group full-width"><label class="form-label">ID Number</label>
+          <input class="form-input" id="eId" disabled style="background:#f4f4f8;color:#888;"/>
+        </div>
+        <div class="form-group"><label class="form-label">First Name*</label><input class="form-input" id="eFirst"/></div>
+        <div class="form-group"><label class="form-label">Last Name*</label><input class="form-input" id="eLast"/></div>
+        <div class="form-group"><label class="form-label">Middle Name</label><input class="form-input" id="eMiddle"/></div>
+        <div class="form-group"><label class="form-label">Course*</label>
+          <select class="form-input form-select" id="eCourse"></select>
+        </div>
+        <div class="form-group"><label class="form-label">Year Level*</label>
+          <select class="form-input form-select" id="eYear">
+            <option value="1">1st Year</option><option value="2">2nd Year</option>
+            <option value="3">3rd Year</option><option value="4">4th Year</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Email*</label><input class="form-input" id="eEmail" type="email"/></div>
+        <div class="form-group"><label class="form-label">Address</label><input class="form-input" id="eAddress"/></div>
+        <div class="form-group"><label class="form-label">Username*</label><input class="form-input" id="eUsername"/></div>
+        <div class="form-group"><label class="form-label">Remaining Session</label><input class="form-input" id="eSession" type="number" min="0" max="30"/></div>
+      </div>
+      <div class="modal-footer-row">
+        <button class="admin-btn-blue" onclick="submitEdit()">Save</button>
+        <button class="admin-btn-gray" onclick="closeModal('editModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Modal -->
+  <div class="modal-overlay" id="searchModal">
+    <div class="modal-box search-modal-box">
+      <div class="modal-header-row">
+        <h3 class="modal-inner-title">Search Student</h3>
+        <button class="modal-close-x" onclick="closeModal('searchModal')">&#x2715;</button>
+      </div>
+      <input type="text" class="form-input" id="searchInput" placeholder="Search..." oninput="doSearch()"/>
+      <hr class="admin-hr" style="margin:0.9rem 0 0.7rem;"/>
+      <div style="text-align:right;"><button class="admin-btn-blue" onclick="doSearch()">Search</button></div>
+      <div id="searchResults" style="margin-top:0.8rem;"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    requireAdmin();
+    initDB().then(() => { populateCourseDropdowns(); renderStudents(); });
+
+    function populateCourseDropdowns() {
+      ['aCourse','eCourse'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        COURSE_LIST.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = opt.textContent = c;
+          sel.appendChild(opt);
+        });
+      });
+    }
+
+    function renderStudents() {
+      const students = dbGetAllStudents();
+      const tbody = document.getElementById('studentsBody');
+      document.getElementById('tblInfo').textContent = `Showing ${students.length} entr${students.length===1?'y':'ies'}`;
+      if (!students.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="no-data">No students registered yet.</td></tr>'; return;
+      }
+      tbody.innerHTML = students.map((s,i) => `
+        <tr class="${i%2===0?'row-even':'row-odd'}">
+          <td style="text-align:right;">${s.id_number}</td>
+          <td>${s.firstname} ${s.midname?s.midname[0]+'. ':''} ${s.lastname}</td>
+          <td style="text-align:center;">${s.year_level}</td>
+          <td>${COURSE_SHORT[s.course]||s.course}</td>
+          <td style="text-align:right;">${s.session_cnt}</td>
+          <td>
+            <button class="admin-btn-blue btn-sm" onclick="openEdit('${s.id_number}')">Edit</button>
+            <button class="admin-btn-red btn-sm" onclick="confirmDelete('${s.id_number}')">Delete</button>
+          </td>
+        </tr>`).join('');
+    }
+
+    function filterTable(bodyId, inputId) {
+      const q = document.getElementById(inputId).value.toLowerCase();
+      document.querySelectorAll(`#${bodyId} tr`).forEach(r => {
+        r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    }
+
+    function submitAdd() {
+      const s = {
+        id_number:val('aId'), firstname:val('aFirst'), lastname:val('aLast'),
+        midname:val('aMiddle'), course:val('aCourse'), year_level:val('aYear'),
+        email:val('aEmail'), address:val('aAddress'), username:val('aUsername'), password:val('aPass')
+      };
+      if (!s.id_number||!s.firstname||!s.lastname||!s.course||!s.year_level||!s.email||!s.username||!s.password) {
+        showToast('Please fill in all required fields.','error'); return;
+      }
+      const r = dbRegister(s);
+      if (r.ok) { showToast('Student added!','success'); closeModal('addModal'); renderStudents(); }
+      else showToast(r.error,'error');
+    }
+
+    function openEdit(id) {
+      const s = dbGetStudent(id);
+      if (!s) return;
+      document.getElementById('eId').value       = s.id_number;
+      document.getElementById('eFirst').value    = s.firstname;
+      document.getElementById('eLast').value     = s.lastname;
+      document.getElementById('eMiddle').value   = s.midname||'';
+      document.getElementById('eEmail').value    = s.email;
+      document.getElementById('eAddress').value  = s.address||'';
+      document.getElementById('eUsername').value = s.username;
+      document.getElementById('eSession').value  = s.session_cnt;
+      for (let o of document.getElementById('eCourse').options) if(o.value===s.course){o.selected=true;break;}
+      for (let o of document.getElementById('eYear').options)   if(o.value===String(s.year_level)){o.selected=true;break;}
+      openModal('editModal');
+    }
+
+    function submitEdit() {
+      const id = document.getElementById('eId').value;
+      const d = {
+        firstname:val('eFirst'), lastname:val('eLast'), midname:val('eMiddle'),
+        course:val('eCourse'), year_level:val('eYear'), email:val('eEmail'),
+        address:val('eAddress'), username:val('eUsername'), password:dbGetStudent(id).password
+      };
+      const sess = parseInt(val('eSession'))||30;
+      if (!d.firstname||!d.lastname||!d.course||!d.year_level||!d.email||!d.username) {
+        showToast('Please fill required fields.','error'); return;
+      }
+      const r = dbUpdateStudent(id, d);
+      db.run('UPDATE students SET session_cnt=? WHERE id_number=?',[sess,id]); saveDB();
+      if (r.ok) { showToast('Student updated!','success'); closeModal('editModal'); renderStudents(); }
+      else showToast(r.error,'error');
+    }
+
+    function confirmDelete(id) {
+      if (!confirm(`Delete student ${id}? This cannot be undone.`)) return;
+      dbDeleteStudent(id); showToast('Student deleted.','success'); renderStudents();
+    }
+
+    function confirmResetAll() {
+      if (!confirm('Reset ALL student sessions to 30?')) return;
+      dbResetAllSessions(); showToast('All sessions reset to 30.','success'); renderStudents();
+    }
+
+    function doSearch() {
+      const q = val('searchInput');
+      if (!q) { document.getElementById('searchResults').innerHTML=''; return; }
+      const r = db.exec(
+        `SELECT id_number,firstname,lastname,course,year_level,session_cnt FROM students
+         WHERE id_number LIKE ? OR firstname LIKE ? OR lastname LIKE ?`,
+        [`%${q}%`,`%${q}%`,`%${q}%`]
+      );
+      const el = document.getElementById('searchResults');
+      if (!r.length||!r[0].values.length) { el.innerHTML='<p style="color:#888;font-size:0.88rem;">No students found.</p>'; return; }
+      el.innerHTML = r[0].values.map(row =>
+        `<div class="search-result-row"><strong>${row[0]}</strong> — ${row[1]} ${row[2]} | ${COURSE_SHORT[row[3]]||row[3]} | Year ${row[4]} | Session: ${row[5]}</div>`
+      ).join('');
+    }
+  </script>
+</body>
+</html>

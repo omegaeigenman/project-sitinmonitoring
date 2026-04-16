@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Profile — CCS Sit-in Monitoring</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+  <nav class="navbar dash-navbar">
+    <span class="dash-brand">&#127979; CCS Dashboard</span>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="dashboard.html">Home</a></li>
+      <li><a href="student_session.html">My Sessions</a></li>
+      <li><a href="student_history.html">History &amp; Feedback</a></li>
+      <li><a href="student_reservation.html">Reservation</a></li>
+      <li><a href="student_notifications.html">Notifications</a></li>
+      <li><a href="edit_profile.html" class="active">Edit Profile</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="sessionClear();window.location.href='login.html'">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="reg-wrapper">
+    <div class="reg-card">
+      <a href="dashboard.html" class="back-btn">&#8592; Back to Dashboard</a>
+      <h2 class="reg-title">Edit Profile</h2>
+
+      <!-- Profile Picture -->
+      <div class="pic-upload-wrap">
+        <div class="pic-ring" onclick="document.getElementById('picInput').click()" title="Click to change photo">
+          <img id="picPreview" src="" alt="" class="pic-img" style="display:none;"/>
+          <div class="pic-initials" id="picInitials"></div>
+          <div class="pic-overlay">&#128247; Change</div>
+        </div>
+        <p class="pic-hint">Click to change profile photo</p>
+        <input type="file" id="picInput" accept="image/*" style="display:none;"
+               onchange="previewPic(this,'picPreview','picInitials')"/>
+      </div>
+
+      <div class="reg-grid">
+        <div class="form-group full-width">
+          <label class="form-label">ID Number</label>
+          <input class="form-input" id="epId" disabled style="background:#f4f4f8;color:#888;cursor:not-allowed;"/>
+          <small class="field-note">ID Number cannot be changed.</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name <span class="req">*</span></label>
+          <input class="form-input" id="epLast"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">First Name <span class="req">*</span></label>
+          <input class="form-input" id="epFirst"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Middle Name</label>
+          <input class="form-input" id="epMiddle"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Course <span class="req">*</span></label>
+          <select class="form-input form-select" id="epCourse">
+            <option value="" disabled>Select course</option>
+            <option>Information Technology</option>
+            <option>Computer Engineering</option>
+            <option>Civil Engineering</option>
+            <option>Mechanical Engineering</option>
+            <option>Electrical Engineering</option>
+            <option>Industrial Engineering</option>
+            <option>Naval Architecture and Marine Engineering</option>
+            <option>Elementary Education (BEEd)</option>
+            <option>Secondary Education (BSEd)</option>
+            <option>Criminology</option>
+            <option>Commerce</option>
+            <option>Accountancy</option>
+            <option>Hotel and Restaurant Management</option>
+            <option>Customs Administration</option>
+            <option>Computer Secretarial</option>
+            <option>Industrial Psychology</option>
+            <option>AB Political Science</option>
+            <option>AB English</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Year Level <span class="req">*</span></label>
+          <select class="form-input form-select" id="epYear">
+            <option value="" disabled>Select year</option>
+            <option value="1">1st Year</option>
+            <option value="2">2nd Year</option>
+            <option value="3">3rd Year</option>
+            <option value="4">4th Year</option>
+          </select>
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">Email Address <span class="req">*</span></label>
+          <input type="email" class="form-input" id="epEmail"/>
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">Address <span class="req">*</span></label>
+          <input class="form-input" id="epAddress"/>
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">Username <span class="req">*</span></label>
+          <input class="form-input" id="epUsername"/>
+        </div>
+        <div class="form-group full-width">
+          <div class="section-divider">Change Password <span class="optional">(leave blank to keep current)</span></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <div class="pw-wrap">
+            <input type="password" class="form-input" id="epNewPass" placeholder="Min. 8 characters"/>
+            <button class="pw-toggle" type="button" onclick="togglePass('epNewPass',this)">&#128065;</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm New Password</label>
+          <div class="pw-wrap">
+            <input type="password" class="form-input" id="epConfirm" placeholder="Repeat new password"/>
+            <button class="pw-toggle" type="button" onclick="togglePass('epConfirm',this)">&#128065;</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:1rem;margin-top:0.6rem;flex-wrap:wrap;">
+        <button class="btn-primary" style="width:auto;padding:0.72rem 2.5rem;" onclick="saveProfile()">Save Changes</button>
+        <a href="dashboard.html" class="btn-cancel">Cancel</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="saveModal">
+    <div class="modal-box">
+      <div class="modal-check">&#10003;</div>
+      <h2 class="modal-title">Profile Updated!</h2>
+      <p class="modal-msg">Your profile has been saved successfully.</p>
+      <button class="modal-ok" onclick="window.location.href='dashboard.html'">OK</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    const sess = sessionGet();
+    if (!sess) window.location.href = 'login.html';
+
+    window._pendingPic = null;
+    let currentStudent = null;
+
+    initDB().then(() => {
+      currentStudent = dbGetStudent(sess.id_number);
+      if (!currentStudent) { sessionClear(); window.location.href = 'login.html'; return; }
+
+      document.getElementById('epId').value       = currentStudent.id_number;
+      document.getElementById('epLast').value      = currentStudent.lastname;
+      document.getElementById('epFirst').value     = currentStudent.firstname;
+      document.getElementById('epMiddle').value    = currentStudent.midname || '';
+      document.getElementById('epEmail').value     = currentStudent.email;
+      document.getElementById('epAddress').value   = currentStudent.address || '';
+      document.getElementById('epUsername').value  = currentStudent.username;
+
+      for (let o of document.getElementById('epCourse').options)
+        if (o.value === currentStudent.course) { o.selected = true; break; }
+      for (let o of document.getElementById('epYear').options)
+        if (o.value === String(currentStudent.year_level)) { o.selected = true; break; }
+
+      const existingPic = getProfilePic(currentStudent.id_number);
+      const initials = ((currentStudent.firstname[0]||'')+(currentStudent.lastname[0]||'')).toUpperCase();
+      if (existingPic) {
+        const img = document.getElementById('picPreview');
+        img.src = existingPic; img.style.display = 'block';
+        document.getElementById('picInitials').style.display = 'none';
+      } else {
+        document.getElementById('picInitials').textContent = initials;
+      }
+    });
+
+    function saveProfile() {
+      const lastname   = val('epLast');
+      const firstname  = val('epFirst');
+      const midname    = val('epMiddle');
+      const course     = val('epCourse');
+      const year_level = val('epYear');
+      const email      = val('epEmail');
+      const address    = val('epAddress');
+      const username   = val('epUsername');
+      const newPass    = val('epNewPass');
+      const confirm    = val('epConfirm');
+
+      if (!lastname||!firstname||!course||!year_level||!email||!address||!username) {
+        showToast('Please fill in all required fields.','error'); return;
+      }
+      if (!validEmail(email)) { showToast('Please enter a valid email address.','error'); return; }
+      if (newPass) {
+        if (newPass.length < 8) { showToast('Password must be at least 8 characters.','error'); return; }
+        if (newPass !== confirm) { showToast('Passwords do not match.','error'); return; }
+      }
+
+      const password = newPass || currentStudent.password;
+      const result = dbUpdateStudent(sess.id_number, {lastname,firstname,midname,course,year_level,email,address,username,password});
+      if (result.ok) {
+        if (window._pendingPic) saveProfilePic(sess.id_number, window._pendingPic);
+        localStorage.setItem('ccs_session', JSON.stringify({
+          id_number: sess.id_number,
+          fullname: [firstname,midname,lastname].filter(Boolean).join(' ')
+        }));
+        document.getElementById('saveModal').classList.add('show');
+      } else {
+        showToast(result.error,'error');
+      }
+    }
+  </script>
+</body>
+</html>

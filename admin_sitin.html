@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sit-in — CCS Admin</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* Feedback modal */
+    .feedback-modal-box { max-width: 480px; text-align: left; }
+    .feedback-stars { display: flex; gap: 6px; margin-bottom: 0.5rem; }
+    .feedback-stars span {
+      font-size: 1.6rem; cursor: pointer; color: #d1d5db; transition: color .15s;
+    }
+    .feedback-stars span.active, .feedback-stars span:hover { color: #f59e0b; }
+    .feedback-textarea {
+      width: 100%; min-height: 90px; border: 1.5px solid #d0d4e8; border-radius: 6px;
+      font-family: inherit; font-size: 0.9rem; padding: 0.55rem 0.75rem; resize: vertical;
+      outline: none; box-sizing: border-box;
+    }
+    .feedback-textarea:focus { border-color: #2E4099; }
+    .feedback-info-row { font-size: 0.85rem; color: #555; margin-bottom: 0.6rem; }
+    .feedback-info-row strong { color: #1a1a2e; }
+  </style>
+</head>
+
+<body class="admin-body">
+
+  <nav class="navbar admin-navbar">
+    <div class="admin-nav-brand">
+      <img src="CCS.png" alt="CCS" class="admin-logo" onerror="this.style.display='none'" />
+      <span class="admin-brand">College of Computer Studies Admin</span>
+    </div>
+    <ul class="nav-links admin-nav" id="navLinks">
+      <li><a href="admin_dashboard.html">Home</a></li>
+      <li><a href="#" onclick="openModal('searchModal');return false;">Search</a></li>
+      <li><a href="admin_students.html">Students</a></li>
+      <li><a href="admin_sitin.html" class="active">Sit-in</a></li>
+      <li><a href="admin_sitin_records.html">View Sit-in Records</a></li>
+      <li><a href="admin_reports.html">Sit-in Reports</a></li>
+      <li><a href="admin_feedback.html">Feedback Reports</a></li>
+      <li><a href="admin_reservation.html">Reservation</a></li>
+      <li><a href="admin_leaderboard.html">Leaderboard</a></li>
+      <li><a href="admin_analytics.html">Analytics</a></li>
+      <li><a href="admin_rewards.html">Add Reward/Points</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="adminLogout();return false;">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="admin-main">
+    <h2 class="admin-page-title">Current Sit in</h2>
+
+    <div class="admin-table-toolbar">
+      <div style="font-size:0.88rem;">
+        <select class="form-input form-select" style="width:65px;display:inline-block;padding:0.28rem 0.5rem;">
+          <option>10</option>
+          <option>25</option>
+          <option>50</option>
+        </select> entries per page
+      </div>
+      <div class="table-search-wrap">
+        Search: <input type="text" class="table-search-input" id="tblSearch"
+          oninput="filterTable('sitinBody','tblSearch')" />
+      </div>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Sit ID Number &#8597;</th>
+            <th>ID Number &#8597;</th>
+            <th>Name &#8597;</th>
+            <th>Purpose &#8597;</th>
+            <th>Sit Lab &#8597;</th>
+            <th>Session &#8597;</th>
+            <th>Status &#8597;</th>
+            <th>Actions &#8597;</th>
+          </tr>
+        </thead>
+        <tbody id="sitinBody">
+          <tr>
+            <td colspan="8" class="no-data">No data available</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-info" id="tblInfo">Showing 1 to 1 of 1 entry</div>
+
+    <div class="pagination-row">
+      <button class="page-btn">&#171;</button><button class="page-btn">&#8249;</button>
+      <button class="page-btn active-page">1</button>
+      <button class="page-btn">&#8250;</button><button class="page-btn">&#187;</button>
+    </div>
+  </div>
+
+  <!-- Sit In Form Modal -->
+  <div class="modal-overlay" id="sitinModal">
+    <div class="modal-box sitin-modal-box">
+      <div class="modal-header-row">
+        <h3 class="modal-inner-title">Sit In Form</h3>
+        <button class="modal-close-x" onclick="closeModal('sitinModal')">&#x2715;</button>
+      </div>
+      <div class="sitin-form-grid">
+        <label class="sitin-label">ID Number:</label>
+        <input class="form-input" id="sId" placeholder="Enter student ID" oninput="lookupOnType()" />
+
+        <label class="sitin-label">Student Name:</label>
+        <input class="form-input" id="sName" readonly style="background:#f8f9fc;" />
+
+        <label class="sitin-label">Purpose:</label>
+        <select class="form-input form-select" id="sPurpose">
+          <option value="" disabled selected>Select programming language</option>
+        </select>
+
+        <label class="sitin-label">Lab:</label>
+        <select class="form-input form-select" id="sLab">
+          <option value="" disabled selected>Select lab room</option>
+          <option value="524">Room 524</option>
+          <option value="526">Room 526</option>
+          <option value="530">Room 530</option>
+          <option value="542">Room 542</option>
+          <option value="544">Room 544</option>
+        </select>
+
+        <label class="sitin-label">Remaining Session:</label>
+        <input class="form-input" id="sSession" readonly style="background:#f8f9fc;" />
+      </div>
+      <div class="modal-footer-row" style="margin-top:1rem;">
+        <button class="admin-btn-gray" onclick="closeModal('sitinModal')">Close</button>
+        <button class="admin-btn-blue" onclick="submitSitin()">Sit In</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback Modal (shown when admin clicks End Session) -->
+  <div class="modal-overlay" id="feedbackModal">
+    <div class="modal-box feedback-modal-box">
+      <div class="modal-header-row">
+        <h3 class="modal-inner-title">&#128172; Student Feedback</h3>
+        <button class="modal-close-x" onclick="skipFeedback()">&#x2715;</button>
+      </div>
+      <p style="font-size:0.85rem;color:#555;margin-bottom:0.8rem;">Record feedback from the student before ending their session.</p>
+      <div class="feedback-info-row"><strong>Student ID:</strong> <span id="fbStudentId"></span></div>
+      <div class="feedback-info-row"><strong>Lab:</strong> <span id="fbLab"></span></div>
+      <input type="hidden" id="fbRating" value="0" />
+      <div style="margin-bottom:0.6rem;">
+        <div style="font-size:0.85rem;font-weight:500;margin-bottom:0.35rem;color:#333;">Rating (optional):</div>
+        <div class="feedback-stars">
+          <span onclick="resetStars(1)" title="1 star">&#9733;</span>
+          <span onclick="resetStars(2)" title="2 stars">&#9733;</span>
+          <span onclick="resetStars(3)" title="3 stars">&#9733;</span>
+          <span onclick="resetStars(4)" title="4 stars">&#9733;</span>
+          <span onclick="resetStars(5)" title="5 stars">&#9733;</span>
+        </div>
+      </div>
+      <div style="margin-bottom:0.9rem;">
+        <label style="font-size:0.85rem;font-weight:500;color:#333;display:block;margin-bottom:0.35rem;">Message / Comment:</label>
+        <textarea class="feedback-textarea" id="fbMessage" placeholder="Enter student feedback here..."></textarea>
+      </div>
+      <div class="modal-footer-row">
+        <button class="admin-btn-gray" onclick="skipFeedback()">Skip</button>
+        <button class="admin-btn-blue" onclick="submitFeedback()">Save &amp; End Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Student Modal -->
+  <div class="modal-overlay" id="searchModal">
+    <div class="modal-box search-modal-box">
+      <div class="modal-header-row">
+        <h3 class="modal-inner-title">Search Student</h3>
+        <button class="modal-close-x" onclick="closeModal('searchModal')">&#x2715;</button>
+      </div>
+      <input type="text" class="form-input" id="searchInput" placeholder="Search..." oninput="doSearch()" />
+      <hr class="admin-hr" style="margin:0.9rem 0 0.7rem;" />
+      <div style="text-align:right;"><button class="admin-btn-blue" onclick="doSearch()">Search</button></div>
+      <div id="searchResults" style="margin-top:0.8rem;"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    requireAdmin();
+
+    function populatePurposeDropdown() {
+      const sel = document.getElementById('sPurpose');
+      while (sel.options.length > 1) sel.remove(1);
+      PROG_LANGUAGES.forEach(lang => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = lang;
+        sel.appendChild(opt);
+      });
+    }
+
+    initDB().then(() => {
+      populatePurposeDropdown();
+      renderSitin();
+
+      // Read student ID from URL and open form automatically
+      const urlParams = new URLSearchParams(window.location.search);
+      const studentId = urlParams.get('id');
+      if (studentId) {
+        openSitinForm(studentId);
+      }
+    });
+
+
+    function renderSitin() {
+      const rows = dbGetActiveSitins();
+      const tbody = document.getElementById('sitinBody');
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="no-data">No data available</td></tr>';
+        document.getElementById('tblInfo').textContent = 'Showing 1 to 1 of 1 entry';
+        return;
+      }
+      document.getElementById('tblInfo').textContent = `Showing ${rows.length} entr${rows.length === 1 ? 'y' : 'ies'}`;
+      tbody.innerHTML = rows.map((r, i) => `
+        <tr class="${i % 2 === 0 ? 'row-even' : 'row-odd'}">
+          <td>${r.id}</td><td>${r.id_number}</td><td>${r.name}</td>
+          <td>${r.purpose}</td><td>${r.lab}</td><td>${r.session}</td>
+          <td><span class="status-badge badge-active">Active</span></td>
+          <td><button class="admin-btn-red btn-sm" onclick="endSession(${r.id})">End Session</button></td>
+        </tr>`).join('');
+    }
+
+    function filterTable(bodyId, inputId) {
+      const q = document.getElementById(inputId).value.toLowerCase();
+      document.querySelectorAll(`#${bodyId} tr`).forEach(r => {
+        r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    }
+
+    function openSitinForm(id_number) {
+      document.getElementById('sId').value = id_number || '';
+      document.getElementById('sName').value = '';
+      document.getElementById('sPurpose').selectedIndex = 0;
+      document.getElementById('sLab').selectedIndex = 0;
+      document.getElementById('sSession').value = '';
+      if (id_number) lookupStudent(id_number);
+      openModal('sitinModal');
+    }
+
+    function lookupOnType() {
+      const id = val('sId');
+      if (id.length >= 3) lookupStudent(id);
+      else { document.getElementById('sName').value = ''; document.getElementById('sSession').value = ''; }
+    }
+
+    function lookupStudent(id) {
+      const s = dbGetStudent(id || val('sId'));
+      if (!s) {
+        document.getElementById('sName').value = '';
+        document.getElementById('sSession').value = '';
+        return;
+      }
+      document.getElementById('sName').value = [s.firstname, s.midname, s.lastname].filter(Boolean).join(' ');
+      document.getElementById('sSession').value = s.session_cnt;
+    }
+
+    function submitSitin() {
+      const id_number = val('sId');
+      const name = document.getElementById('sName').value.trim();
+      const purpose = val('sPurpose');
+      const lab = val('sLab');
+      const session = parseInt(document.getElementById('sSession').value) || 0;
+
+      if (!id_number || !name) { showToast('Enter a valid student ID first.', 'error'); return; }
+      if (!purpose) { showToast('Please select a programming language.', 'error'); return; }
+      if (!lab) { showToast('Please select a lab room.', 'error'); return; }
+      if (session <= 0) { showToast('No remaining sessions for this student.', 'error'); return; }
+
+      const active = db.exec("SELECT id FROM sit_in WHERE id_number=? AND status='Active'", [id_number]);
+      if (active.length && active[0].values.length) {
+        showToast('Student already has an active sit-in.', 'error'); return;
+      }
+
+      dbAddSitin(id_number, name, purpose, lab, session);
+      showToast('Sit-in recorded!', 'success');
+      closeModal('sitinModal');
+      renderSitin();
+    }
+
+    // ── End Session → open feedback modal ──────────────────────
+    let _pendingSitId = null;
+
+    function endSession(sitId) {
+      // Get the sit-in row so we can pre-fill the modal
+      const r = db.exec('SELECT id_number, lab FROM sit_in WHERE id=?', [sitId]);
+      if (r.length && r[0].values.length) {
+        _pendingSitId = sitId;
+        const row = r[0].values[0];
+        document.getElementById('fbStudentId').textContent = row[0];
+        document.getElementById('fbLab').textContent       = row[1];
+        document.getElementById('fbMessage').value         = '';
+        resetStars(0);
+        openModal('feedbackModal');
+      } else {
+        // Fallback: just end without feedback
+        commitEndSession(sitId, null, null, 0);
+      }
+    }
+
+    function resetStars(rating) {
+      document.querySelectorAll('.feedback-stars span').forEach((s, i) => {
+        s.classList.toggle('active', i < rating);
+      });
+      document.getElementById('fbRating').value = rating;
+    }
+
+    function submitFeedback() {
+      const message = document.getElementById('fbMessage').value.trim();
+      const rating  = parseInt(document.getElementById('fbRating').value) || 0;
+      commitEndSession(_pendingSitId, message, document.getElementById('fbLab').textContent, rating);
+      closeModal('feedbackModal');
+    }
+
+    function skipFeedback() {
+      commitEndSession(_pendingSitId, null, null, 0);
+      closeModal('feedbackModal');
+    }
+
+    function commitEndSession(sitId, message, lab, rating) {
+      dbEndSitin(sitId);
+      if (message) {
+        const info = db.exec('SELECT id_number, lab FROM sit_in WHERE id=?', [sitId]);
+        const id_number = (info.length && info[0].values.length) ? info[0].values[0][0] : '';
+        const labUsed   = lab || ((info.length && info[0].values.length) ? info[0].values[0][1] : '');
+        // Ensure feedback table exists
+        db.run(`CREATE TABLE IF NOT EXISTS feedback (
+          id         INTEGER PRIMARY KEY AUTOINCREMENT,
+          id_number  TEXT NOT NULL,
+          lab        TEXT NOT NULL,
+          message    TEXT NOT NULL,
+          rating     INTEGER DEFAULT 0,
+          created_at TEXT DEFAULT (datetime('now'))
+        )`);
+        db.run('INSERT INTO feedback (id_number, lab, message, rating) VALUES (?,?,?,?)',
+          [id_number, labUsed, message, rating]);
+        saveDB();
+        showToast('Session ended & feedback saved!', 'success');
+      } else {
+        saveDB();
+        showToast('Session ended.', 'success');
+      }
+      renderSitin();
+    }
+
+    // Search — click result to open Sit-in form
+    function doSearch() {
+      const q = val('searchInput');
+      if (!q) { document.getElementById('searchResults').innerHTML = ''; return; }
+      const r = db.exec(
+        `SELECT id_number,firstname,lastname,course,year_level,session_cnt FROM students
+         WHERE id_number LIKE ? OR firstname LIKE ? OR lastname LIKE ?`,
+        [`%${q}%`, `%${q}%`, `%${q}%`]
+      );
+      const el = document.getElementById('searchResults');
+      if (!r.length || !r[0].values.length) {
+        el.innerHTML = '<p style="color:#888;font-size:0.88rem;">No students found.</p>'; return;
+      }
+      el.innerHTML = r[0].values.map(row => `
+        <div class="search-result-row search-result-clickable"
+             onclick="closeModal('searchModal'); openSitinForm('${row[0]}');">
+          <strong>${row[0]}</strong> — ${row[1]} ${row[2]}
+          &nbsp;|&nbsp; ${COURSE_SHORT[row[3]] || row[3]}
+          &nbsp;|&nbsp; Year ${row[4]}
+          &nbsp;|&nbsp; Session: ${row[5]}
+          <span style="float:right;background:#2563eb;color:#fff;padding:0.1rem 0.5rem;border-radius:4px;font-size:0.76rem;">Sit-in &#8594;</span>
+        </div>`).join('');
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add Reward Points — CCS Admin</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="admin.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    .reward-layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 1.1rem;
+      align-items: start;
+    }
+    @media (max-width: 860px) { .reward-layout { grid-template-columns: 1fr; } }
+
+    .rw-card {
+      background: #fff; border-radius: 12px;
+      border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46,64,153,.08);
+      overflow: hidden;
+    }
+    .rw-head {
+      color: #fff; padding: .7rem 1.1rem;
+      font-weight: 700; font-size: .95rem;
+      display: flex; align-items: center; gap: .45rem;
+    }
+    .rw-head-green  { background: linear-gradient(90deg,#059669,#10b981); }
+    .rw-head-purple { background: linear-gradient(90deg,#7c3aed,#a855f7); }
+    .rw-head-blue   { background: linear-gradient(90deg,#1e3a6e,#2547a0); }
+    .rw-body { padding: 1.1rem; }
+
+    .rw-field { margin-bottom: .75rem; }
+    .rw-label { font-size: .82rem; font-weight: 600; color: #374151; margin-bottom: .3rem; }
+    .rw-input {
+      width: 100%; border: 1.5px solid #d0d4e8; border-radius: 7px;
+      padding: .48rem .75rem; font-family: inherit; font-size: .88rem;
+      outline: none; box-sizing: border-box; transition: border .15s;
+    }
+    .rw-input:focus { border-color: #059669; }
+
+    .student-display {
+      background: #f0fdf4; border: 1px solid #bbf7d0;
+      border-radius: 7px; padding: .45rem .75rem;
+      font-size: .85rem; color: #065f46; font-weight: 600;
+      display: none; margin-top: .4rem;
+    }
+    .student-display.visible { display: block; }
+    .student-display.error { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+
+    .preset-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
+    .preset-chip {
+      background: #ede9fe; color: #6d28d9;
+      border: none; border-radius: 20px;
+      padding: .22rem .65rem; font-size: .76rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: background .12s;
+    }
+    .preset-chip:hover { background: #ddd6fe; }
+
+    .rw-submit {
+      width: 100%; background: linear-gradient(90deg,#059669,#10b981);
+      color: #fff; border: none; border-radius: 7px;
+      padding: .55rem; font-weight: 700; font-size: .92rem;
+      font-family: inherit; cursor: pointer; margin-top: .3rem;
+      transition: opacity .15s;
+    }
+    .rw-submit:hover { opacity: .88; }
+
+    /* Log styles */
+    .log-filter-bar {
+      display: flex; gap: .5rem; margin-bottom: .7rem; flex-wrap: wrap; align-items: center;
+    }
+    .log-search {
+      padding: .36rem .7rem; border: 1.5px solid #d0d4e8;
+      border-radius: 7px; font-family: inherit; font-size: .83rem;
+      outline: none; flex: 1; min-width: 140px;
+    }
+    .log-search:focus { border-color: #7c3aed; }
+    .log-count { font-size: .78rem; color: #888; white-space: nowrap; }
+
+    .log-row {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .45rem .4rem; border-bottom: 1px solid #f0f2f8;
+      font-size: .83rem;
+    }
+    .log-row:last-child { border-bottom: none; }
+    .log-row:hover { background: #f8f9ff; }
+    .pts-badge {
+      background: #ede9fe; color: #6d28d9;
+      font-weight: 700; font-size: .74rem;
+      padding: .14rem .45rem; border-radius: 12px; white-space: nowrap;
+    }
+    .log-id      { color: #1e3a6e; font-weight: 600; font-size: .78rem; white-space: nowrap; }
+    .log-reason  { flex: 1; color: #374151; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .log-date    { color: #aaa; font-size: .72rem; white-space: nowrap; }
+    .log-empty   { text-align: center; padding: 1.5rem; color: #aaa; font-size: .85rem; }
+
+    /* All students list (for picking) */
+    .student-picker {
+      max-height: 260px; overflow-y: auto;
+      border: 1.5px solid #d0d4e8; border-radius: 7px;
+      margin-top: .4rem; display: none;
+    }
+    .student-picker.open { display: block; }
+    .picker-row {
+      display: flex; align-items: center; gap: .55rem;
+      padding: .45rem .75rem; cursor: pointer; font-size: .84rem;
+      border-bottom: 1px solid #f0f2f8; transition: background .1s;
+    }
+    .picker-row:last-child { border-bottom: none; }
+    .picker-row:hover { background: #f0f4ff; }
+    .picker-id   { font-weight: 700; color: #1e3a6e; }
+    .picker-name { color: #374151; }
+    .picker-pts  { margin-left: auto; font-size: .76rem; color: #6d28d9; font-weight: 600; }
+  </style>
+</head>
+<body class="admin-body">
+  <nav class="navbar admin-navbar">
+    <div class="admin-nav-brand">
+      <img src="CCS.png" alt="CCS" class="admin-logo" onerror="this.style.display='none'"/>
+      <span class="admin-brand">College of Computer Studies Admin</span>
+    </div>
+    <ul class="nav-links admin-nav" id="navLinks">
+      <li><a href="admin_dashboard.html">Home</a></li>
+      <li><a href="#" onclick="openModal('searchModal');return false;">Search</a></li>
+      <li><a href="admin_students.html">Students</a></li>
+      <li><a href="admin_sitin.html">Sit-in</a></li>
+      <li><a href="admin_sitin_records.html">View Sit-in Records</a></li>
+      <li><a href="admin_reports.html">Sit-in Reports</a></li>
+      <li><a href="admin_feedback.html">Feedback Reports</a></li>
+      <li><a href="admin_reservation.html">Reservation</a></li>
+      <li><a href="admin_leaderboard.html">Leaderboard</a></li>
+      <li><a href="admin_analytics.html">Analytics</a></li>
+      <li><a href="admin_rewards.html" class="active">Add Reward/Points</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="adminLogout();return false;">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="admin-main">
+    <div class="reward-layout">
+
+      <!-- LEFT: Award form -->
+      <div>
+        <div class="rw-card" style="margin-bottom:1rem;">
+          <div class="rw-head rw-head-green">&#10133; Award Points to Student</div>
+          <div class="rw-body">
+            <div class="rw-field">
+              <div class="rw-label">Student ID Number</div>
+              <input class="rw-input" type="text" id="rwId" placeholder="Type or search..."
+                oninput="onIdInput()" autocomplete="off"/>
+              <div class="student-picker" id="studentPicker"></div>
+              <div class="student-display" id="rwDisplay"></div>
+            </div>
+            <div class="rw-field">
+              <div class="rw-label">Points to Award</div>
+              <input class="rw-input" type="number" id="rwPoints" min="1" max="999" placeholder="e.g. 10"/>
+              <div class="preset-chips">
+                <button class="preset-chip" onclick="setPts(5)">+5</button>
+                <button class="preset-chip" onclick="setPts(10)">+10</button>
+                <button class="preset-chip" onclick="setPts(25)">+25</button>
+                <button class="preset-chip" onclick="setPts(50)">+50</button>
+                <button class="preset-chip" onclick="setPts(100)">+100</button>
+              </div>
+            </div>
+            <div class="rw-field">
+              <div class="rw-label">Reason / Note <span style="font-weight:400;color:#aaa;">(optional)</span></div>
+              <input class="rw-input" type="text" id="rwReason" placeholder="e.g. Perfect attendance"/>
+            </div>
+            <button class="rw-submit" onclick="awardPoints()">&#127881; Award Points</button>
+          </div>
+        </div>
+
+        <!-- Student Quick Browse -->
+        <div class="rw-card">
+          <div class="rw-head rw-head-blue">&#128101; All Students — Points Overview</div>
+          <div class="rw-body" style="padding:.6rem .8rem;">
+            <input class="log-search" type="text" id="browseSearch" placeholder="&#128269; Search students..." oninput="renderBrowse()" style="width:100%;margin-bottom:.6rem;"/>
+            <div id="browseList" style="max-height:300px;overflow-y:auto;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Points log -->
+      <div class="rw-card">
+        <div class="rw-head rw-head-purple">&#128196; Points Log — <span id="logStudentLabel">All Students</span></div>
+        <div class="rw-body" style="padding:.7rem .8rem;">
+          <div class="log-filter-bar">
+            <input class="log-search" type="text" id="logSearch" placeholder="&#128269; Search log..." oninput="renderLog()"/>
+            <span class="log-count" id="logCount"></span>
+          </div>
+          <div id="logList" style="max-height:500px;overflow-y:auto;">
+            <div class="log-empty">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    requireAdmin();
+    let _selStudent = null;
+    let _allLog     = [];
+    let _lookupTimer= null;
+
+    initDB().then(() => {
+      dbEnsurePointsTable();
+      loadAllLog();
+      renderBrowse();
+    });
+
+    // ── ID input + picker ─────────────────────────────────────
+    function onIdInput() {
+      clearTimeout(_lookupTimer);
+      _lookupTimer = setTimeout(() => {
+        const q       = document.getElementById('rwId').value.trim();
+        const picker  = document.getElementById('studentPicker');
+        const display = document.getElementById('rwDisplay');
+        _selStudent   = null;
+        display.className = 'student-display';
+
+        if (!q) { picker.classList.remove('open'); return; }
+
+        // Exact match first
+        const exact = dbGetStudent(q);
+        if (exact) {
+          selectStudent(exact);
+          picker.classList.remove('open');
+          return;
+        }
+
+        // Partial search
+        const r = db.exec(
+          `SELECT id_number,firstname,lastname FROM students
+           WHERE id_number LIKE ? OR firstname LIKE ? OR lastname LIKE ? LIMIT 8`,
+          [`%${q}%`,`%${q}%`,`%${q}%`]);
+        if (!r.length || !r[0].values.length) {
+          picker.classList.remove('open');
+          display.className = 'student-display error visible';
+          display.textContent = '✗ No student found with that ID';
+          return;
+        }
+        picker.classList.add('open');
+        picker.innerHTML = r[0].values.map(row => {
+          const pts = dbGetTotalPoints(row[0]);
+          return `<div class="picker-row" onclick="pickStudent('${row[0]}')">
+            <span class="picker-id">${row[0]}</span>
+            <span class="picker-name">${row[1]} ${row[2]}</span>
+            <span class="picker-pts">&#11088; ${pts}</span>
+          </div>`;
+        }).join('');
+      }, 280);
+    }
+
+    function pickStudent(id) {
+      const s = dbGetStudent(id);
+      if (!s) return;
+      selectStudent(s);
+      document.getElementById('studentPicker').classList.remove('open');
+      document.getElementById('rwId').value = id;
+    }
+
+    function selectStudent(s) {
+      _selStudent = s;
+      const pts   = dbGetTotalPoints(s.id_number);
+      const fname = [s.firstname, s.midname, s.lastname].filter(Boolean).join(' ');
+      const display = document.getElementById('rwDisplay');
+      display.className = 'student-display visible';
+      display.textContent = `✓ ${fname}  |  Total Points: ${pts}`;
+      // show that student's log
+      loadStudentLog(s.id_number);
+    }
+
+    // Close picker on outside click
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#rwId') && !e.target.closest('#studentPicker'))
+        document.getElementById('studentPicker').classList.remove('open');
+    });
+
+    // ── Award ─────────────────────────────────────────────────
+    function setPts(n) { document.getElementById('rwPoints').value = n; }
+
+    function awardPoints() {
+      if (!_selStudent) { showToast('Enter a valid student ID first.', 'error'); return; }
+      const pts    = parseInt(document.getElementById('rwPoints').value);
+      const reason = document.getElementById('rwReason').value.trim();
+      if (!pts || pts < 1) { showToast('Enter a valid number of points.', 'error'); return; }
+
+      dbAddPoints(_selStudent.id_number, pts, reason);
+      showToast(`+${pts} points awarded to ${_selStudent.firstname}!`, 'success');
+
+      const total = dbGetTotalPoints(_selStudent.id_number);
+      const fname = [_selStudent.firstname, _selStudent.midname, _selStudent.lastname].filter(Boolean).join(' ');
+      const display = document.getElementById('rwDisplay');
+      display.textContent = `✓ ${fname}  |  Total Points: ${total}`;
+
+      document.getElementById('rwPoints').value = '';
+      document.getElementById('rwReason').value = '';
+      loadAllLog();
+      renderBrowse();
+      loadStudentLog(_selStudent.id_number);
+    }
+
+    // ── Log ───────────────────────────────────────────────────
+    function loadAllLog() {
+      try {
+        dbEnsurePointsTable();
+        const r = db.exec(
+          `SELECT sp.id_number, s.firstname, s.lastname, sp.points, sp.reason, sp.awarded_at
+           FROM student_points sp
+           LEFT JOIN students s ON s.id_number = sp.id_number
+           ORDER BY sp.id DESC LIMIT 200`);
+        _allLog = (r.length && r[0].values.length)
+          ? r[0].values.map(v => ({ id_number:v[0], name:((v[1]||'')+(v[2]?' '+v[2]:'')), points:v[3], reason:v[4], date:v[5] }))
+          : [];
+      } catch(e) { _allLog = []; }
+      renderLog();
+    }
+
+    function loadStudentLog(id) {
+      document.getElementById('logStudentLabel').textContent = id;
+      const log = dbGetPointsLog(id);
+      _allLog = log.map(l => ({ id_number: id, points: l.points, reason: l.reason, date: l.awarded_at }));
+      renderLog();
+    }
+
+    function renderLog() {
+      const q = (document.getElementById('logSearch').value || '').toLowerCase();
+      const rows = q ? _allLog.filter(l =>
+        (l.id_number||'').includes(q) || (l.name||'').toLowerCase().includes(q) || (l.reason||'').toLowerCase().includes(q)
+      ) : _allLog;
+      document.getElementById('logCount').textContent = `${rows.length} record(s)`;
+      const el = document.getElementById('logList');
+      if (!rows.length) { el.innerHTML = '<div class="log-empty">No records found.</div>'; return; }
+      el.innerHTML = rows.map(l => `
+        <div class="log-row">
+          <span class="pts-badge">+${l.points}</span>
+          ${l.id_number ? `<span class="log-id">${l.id_number}</span>` : ''}
+          <span class="log-reason">${l.reason || '—'}</span>
+          <span class="log-date">${l.date ? l.date.slice(0,10) : ''}</span>
+        </div>`).join('');
+    }
+
+    // ── Browse ────────────────────────────────────────────────
+    function renderBrowse() {
+      const q = (document.getElementById('browseSearch').value || '').toLowerCase();
+      const students = dbGetAllStudents().filter(s =>
+        !q || s.id_number.includes(q) || (s.firstname+' '+s.lastname).toLowerCase().includes(q)
+      );
+      const el = document.getElementById('browseList');
+      if (!students.length) { el.innerHTML = '<div class="log-empty">No students found.</div>'; return; }
+      el.innerHTML = students.map(s => {
+        const pts   = dbGetTotalPoints(s.id_number);
+        const fname = [s.firstname, s.lastname].join(' ');
+        return `
+          <div class="log-row" style="cursor:pointer;" onclick="pickStudent('${s.id_number}')">
+            <span class="log-id">${s.id_number}</span>
+            <span class="log-reason">${fname}</span>
+            <span class="pts-badge">&#11088; ${pts}</span>
+          </div>`;
+      }).join('');
+    }
+  </script>
+</body>
+</html>

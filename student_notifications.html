@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Notifications — CCS</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body { background: #eef0f5; }
+    .page-wrap { max-width: 700px; margin: 0 auto; padding: 1.4rem 1rem 2rem; }
+    .page-title { font-size: 1.4rem; font-weight: 700; color: #1a1a2e; margin-bottom: 1.2rem; }
+    .back-link  { display:inline-block; text-decoration:none; color:#2547a0; font-size:.88rem; margin-bottom:.8rem; }
+    .back-link:hover { text-decoration:underline; }
+
+    /* ── Filter / action bar ── */
+    .notif-toolbar {
+      display: flex; align-items: center; gap: .7rem;
+      margin-bottom: 1rem; flex-wrap: wrap;
+    }
+    .notif-filter-btn {
+      padding: .32rem .85rem; border-radius: 20px;
+      font-size: .8rem; font-weight: 600;
+      border: 1.5px solid #d0d4e8;
+      background: #f8f9fc; color: #6b7280;
+      cursor: pointer; font-family: inherit; transition: all .13s;
+    }
+    .notif-filter-btn.active { background: #1e2a6e; color: #fff; border-color: #1e2a6e; }
+    .mark-all-btn {
+      margin-left: auto;
+      background: none; border: 1.5px solid #d0d4e8;
+      border-radius: 7px; padding: .3rem .8rem;
+      font-size: .8rem; font-weight: 600; color: #6b7280;
+      cursor: pointer; font-family: inherit; transition: all .13s;
+    }
+    .mark-all-btn:hover { background: #f0f3ff; color: #1e2a6e; }
+
+    /* ── Notification items ── */
+    .notif-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #dde3f0;
+      box-shadow: 0 2px 10px rgba(46,64,153,.07);
+      overflow: hidden;
+      margin-bottom: .7rem;
+      cursor: pointer;
+      transition: box-shadow .14s, border-color .14s;
+    }
+    .notif-card:hover { box-shadow: 0 4px 18px rgba(46,64,153,.14); border-color: #c7d2fe; }
+    .notif-card.unread { border-left: 4px solid #2547a0; }
+    .notif-card.unread.type-alert  { border-left-color: #ef4444; }
+    .notif-card.unread.type-res    { border-left-color: #10b981; }
+    .notif-card.unread.type-pts    { border-left-color: #f59e0b; }
+
+    .notif-card-inner {
+      display: flex; align-items: flex-start; gap: .9rem; padding: .9rem 1rem;
+    }
+    .notif-icon-wrap {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; flex-shrink: 0;
+    }
+    .icon-ann   { background: #eef1ff; }
+    .icon-alert { background: #fee2e2; }
+    .icon-res   { background: #d1fae5; }
+    .icon-pts   { background: #fef3c7; }
+
+    .notif-content { flex: 1; min-width: 0; }
+    .notif-title {
+      font-size: .88rem; font-weight: 600; color: #1a1a2e;
+      margin-bottom: .2rem; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .notif-body  { font-size: .83rem; color: #555; line-height: 1.5; }
+    .notif-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: .3rem;
+    }
+    .notif-time   { font-size: .72rem; color: #aaa; }
+    .notif-unread-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #2547a0; flex-shrink: 0;
+    }
+    .notif-unread-dot.hidden { visibility: hidden; }
+
+    .notif-empty { text-align: center; padding: 3rem; color: #aaa; font-size: .88rem; }
+
+    /* summary bar */
+    .notif-summary {
+      display: flex; gap: .7rem; flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .notif-sum-pill {
+      display: flex; align-items: center; gap: .35rem;
+      background: #fff; border: 1px solid #dde3f0;
+      border-radius: 20px; padding: .3rem .8rem;
+      font-size: .8rem; font-weight: 600; color: #374151;
+    }
+    .sum-dot { width: 9px; height: 9px; border-radius: 50%; }
+  </style>
+</head>
+<body>
+  <nav class="navbar dash-navbar">
+    <span class="dash-brand">&#127979; CCS Dashboard</span>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="dashboard.html">Home</a></li>
+      <li><a href="student_session.html">My Sessions</a></li>
+      <li><a href="student_history.html">History &amp; Feedback</a></li>
+      <li><a href="student_reservation.html">Reservation</a></li>
+      <li><a href="student_notifications.html" class="active">Notifications</a></li>
+      <li><a href="edit_profile.html">Edit Profile</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="handleLogout()">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="page-wrap">
+    <a href="dashboard.html" class="back-link">&#8592; Back to Dashboard</a>
+    <div class="page-title">&#128276; Notifications &amp; Alerts</div>
+
+    <!-- Summary pills -->
+    <div class="notif-summary" id="notifSummary"></div>
+
+    <!-- Toolbar -->
+    <div class="notif-toolbar">
+      <button class="notif-filter-btn active" onclick="setFilter('all',   this)">All</button>
+      <button class="notif-filter-btn"        onclick="setFilter('unread', this)">Unread</button>
+      <button class="notif-filter-btn"        onclick="setFilter('ann',   this)">&#128227; Announcements</button>
+      <button class="notif-filter-btn"        onclick="setFilter('alert', this)">&#9888; Alerts</button>
+      <button class="notif-filter-btn"        onclick="setFilter('res',   this)">&#128197; Reservations</button>
+      <button class="mark-all-btn" onclick="markAllRead()">&#10003; Mark all read</button>
+    </div>
+
+    <!-- Notification list -->
+    <div id="notifList"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    let _items  = [];
+    let _filter = 'all';
+    let _read   = new Set(JSON.parse(localStorage.getItem('ccs_read_notifs') || '[]'));
+    let _student= null;
+
+    const ICON_MAP  = { ann:'&#128227;', alert:'&#9888;&#65039;', res:'&#128197;', pts:'&#11088;' };
+    const ICON_CLS  = { ann:'icon-ann', alert:'icon-alert', res:'icon-res', pts:'icon-pts' };
+    const TITLE_MAP = { ann:'Announcement', alert:'System Alert', res:'Reservation Update', pts:'Reward Points' };
+
+    async function init() {
+      const sess = sessionGet();
+      if (!sess) { window.location.href = 'login.html'; return; }
+      await initDB();
+      dbEnsurePointsTable();
+      _student = dbGetStudent(sess.id_number);
+      if (!_student) { sessionClear(); window.location.href = 'login.html'; return; }
+      buildItems();
+      render();
+    }
+
+    function buildItems() {
+      _items = [];
+      // 1. Announcements
+      const anns = JSON.parse(localStorage.getItem('ccs_announcements') || '[]');
+      anns.forEach((a, i) => {
+        if (a.text) _items.push({ id: 'ann_' + i, type: 'ann', body: a.text, date: a.date });
+      });
+
+      // 2. Session low alert
+      if (_student.session_cnt <= 5) {
+        _items.unshift({ id: 'sess_low', type: 'alert',
+          body: `⚠️ You only have ${_student.session_cnt} session(s) remaining. Please contact the admin to restore your sessions.`,
+          date: 'System' });
+      }
+      if (_student.session_cnt <= 15 && _student.session_cnt > 5) {
+        _items.push({ id: 'sess_mid', type: 'alert',
+          body: `Your sessions are below 50% — ${_student.session_cnt} remaining out of 30.`,
+          date: 'System' });
+      }
+
+      // 3. Reservation status
+      try {
+        const r = db.exec(
+          `SELECT id, status, res_date, lab, computer_num FROM reservations
+           WHERE id_number=? AND status IN ('Accepted','Denied') ORDER BY rowid DESC LIMIT 10`,
+          [_student.id_number]);
+        if (r.length && r[0].values.length) {
+          r[0].values.forEach(row => {
+            _items.unshift({ id: 'res_' + row[0], type: 'res',
+              body: `Your reservation for Lab ${row[3]} (Computer #${row[4]}) on ${row[2]} was ${row[1]}.`,
+              date: row[2] });
+          });
+        }
+      } catch(e) {}
+
+      // 4. Points awarded
+      try {
+        const rp = dbGetPointsLog(_student.id_number);
+        rp.slice(0, 5).forEach((l, i) => {
+          _items.unshift({ id: 'pts_' + i, type: 'pts',
+            body: `You were awarded +${l.points} point(s)${l.reason ? ': ' + l.reason : ''}.`,
+            date: l.awarded_at || '' });
+        });
+      } catch(e) {}
+
+      // Sort unread first
+      _items.sort((a, b) => (_read.has(a.id) ? 1 : 0) - (_read.has(b.id) ? 1 : 0));
+    }
+
+    function setFilter(f, btn) {
+      _filter = f;
+      document.querySelectorAll('.notif-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    }
+
+    function render() {
+      let list = _items;
+      if (_filter === 'unread') list = list.filter(n => !_read.has(n.id));
+      else if (_filter !== 'all') list = list.filter(n => n.type === _filter);
+
+      const el = document.getElementById('notifList');
+      if (!list.length) {
+        el.innerHTML = '<div class="notif-empty">&#128263; No notifications here.</div>';
+      } else {
+        el.innerHTML = list.map(n => {
+          const isUnread = !_read.has(n.id);
+          return `
+          <div class="notif-card ${isUnread ? 'unread type-'+n.type : ''}" onclick="readNotif('${n.id}')">
+            <div class="notif-card-inner">
+              <div class="notif-icon-wrap ${ICON_CLS[n.type]}">${ICON_MAP[n.type]}</div>
+              <div class="notif-content">
+                <div class="notif-title">${TITLE_MAP[n.type]}</div>
+                <div class="notif-body">${n.body}</div>
+                <div class="notif-footer">
+                  <span class="notif-time">${n.date}</span>
+                  <div class="notif-unread-dot ${isUnread ? '' : 'hidden'}"></div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      // Summary pills
+      const unreadCount = _items.filter(n => !_read.has(n.id)).length;
+      const annCount    = _items.filter(n => n.type === 'ann').length;
+      const alertCount  = _items.filter(n => n.type === 'alert').length;
+      const resCount    = _items.filter(n => n.type === 'res').length;
+      const ptsCount    = _items.filter(n => n.type === 'pts').length;
+      document.getElementById('notifSummary').innerHTML = [
+        ['#ef4444', unreadCount + ' unread'],
+        ['#2547a0', annCount    + ' announcement(s)'],
+        ['#ef4444', alertCount  + ' alert(s)'],
+        ['#10b981', resCount    + ' reservation update(s)'],
+        ['#f59e0b', ptsCount    + ' points awarded'],
+      ].map(([color, label]) =>
+        `<div class="notif-sum-pill"><div class="sum-dot" style="background:${color};"></div>${label}</div>`
+      ).join('');
+    }
+
+    function readNotif(id) {
+      _read.add(id);
+      localStorage.setItem('ccs_read_notifs', JSON.stringify([..._read]));
+      render();
+    }
+
+    function markAllRead() {
+      _items.forEach(n => _read.add(n.id));
+      localStorage.setItem('ccs_read_notifs', JSON.stringify([..._read]));
+      render();
+      showToast('All notifications marked as read.', 'success');
+    }
+
+    function handleLogout() { sessionClear(); window.location.href = 'login.html'; }
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

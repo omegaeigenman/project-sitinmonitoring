@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feedback Reports — CCS Admin</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Feedback toolbar ── */
+    .feedback-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.8rem;
+    }
+
+    .filter-wrap {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.88rem;
+    }
+
+    .filter-wrap input {
+      padding: 0.28rem 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      width: 180px;
+    }
+
+    .export-btn {
+      padding: 0.28rem 0.9rem;
+      font-size: 0.82rem;
+      border: 1px solid #bbb;
+      border-radius: 4px;
+      background: #f4f6fb;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .export-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .page-info {
+      font-size: 0.82rem;
+      color: #555;
+      margin: 0.5rem 0;
+    }
+
+    /* ── Star rating display ── */
+    .star-rating {
+      color: #f59e0b;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .star-empty {
+      color: #d1d5db;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+
+      .admin-table th:nth-child(3),
+      .admin-table td:nth-child(3) {
+        display: none;
+      }
+
+      /* hide Date on tiny screens */
+    }
+
+    @media (max-width: 500px) {
+      .filter-wrap input {
+        width: 130px;
+      }
+    }
+  </style>
+</head>
+
+<body class="admin-body">
+
+  <nav class="navbar admin-navbar">
+    <div class="admin-nav-brand">
+      <img src="CCS.png" alt="CCS" class="admin-logo" onerror="this.style.display='none'" />
+      <span class="admin-brand">College of Computer Studies Admin</span>
+    </div>
+    <ul class="nav-links admin-nav" id="navLinks">
+      <li><a href="admin_dashboard.html">Home</a></li>
+      <li><a href="#" onclick="openModal('searchModal');return false;">Search</a></li>
+      <li><a href="admin_students.html">Students</a></li>
+      <li><a href="admin_sitin.html">Sit-in</a></li>
+      <li><a href="admin_sitin_records.html">View Sit-in Records</a></li>
+      <li><a href="admin_reports.html">Sit-in Reports</a></li>
+      <li><a href="admin_feedback.html" class="active">Feedback Reports</a></li>
+      <li><a href="admin_reservation.html">Reservation</a></li>
+      <li><a href="admin_leaderboard.html">Leaderboard</a></li>
+      <li><a href="admin_analytics.html">Analytics</a></li>
+      <li><a href="admin_rewards.html">Add Reward/Points</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="adminLogout();return false;">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="admin-main">
+    <h2 class="admin-page-title">Feedback Report</h2>
+
+    <!-- Toolbar -->
+    <div class="feedback-toolbar">
+      <button class="export-btn" onclick="window.print()">Print</button>
+      <div class="filter-wrap">
+        Filter: <input type="text" id="liveFilter" oninput="liveFilter()" placeholder="Filter..." />
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="admin-table-wrap">
+      <table class="admin-table" id="feedbackTable">
+        <thead>
+          <tr>
+            <th>Student ID Number &#8597;</th>
+            <th>Laboratory &#8597;</th>
+            <th>Date &#8597;</th>
+            <th>Rating &#8597;</th>
+            <th>Message &#8597;</th>
+          </tr>
+        </thead>
+        <tbody id="feedbackBody">
+          <tr>
+            <td colspan="5" class="no-data">No feedback submitted yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="page-info" id="pageInfo">Showing 0 entries</div>
+    <div class="pagination-row">
+      <button class="page-btn" onclick="changePage(-1)">&#171;</button>
+      <button class="page-btn" onclick="changePage(-1)">&#8249;</button>
+      <span id="pageNum" class="page-btn active-page">1</span>
+      <button class="page-btn" onclick="changePage(1)">&#8250;</button>
+      <button class="page-btn" onclick="changePage(1)">&#187;</button>
+    </div>
+  </div>
+
+  <!-- Search Modal -->
+  <div class="modal-overlay" id="searchModal">
+    <div class="modal-box search-modal-box">
+      <div class="modal-header-row">
+        <h3 class="modal-inner-title">Search Student</h3>
+        <button class="modal-close-x" onclick="closeModal('searchModal')">&#x2715;</button>
+      </div>
+      <input type="text" class="form-input" id="searchInput" placeholder="Search..." oninput="doSearch()" />
+      <hr class="admin-hr" style="margin:0.9rem 0 0.7rem;" />
+      <div style="text-align:right;"><button class="admin-btn-blue" onclick="doSearch()">Search</button></div>
+      <div id="searchResults" style="margin-top:0.8rem;"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    requireAdmin();
+
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
+    let allFeedback = [];
+
+    initDB().then(() => {
+      // Ensure feedback table exists (with rating column)
+      db.run(`CREATE TABLE IF NOT EXISTS feedback (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_number  TEXT NOT NULL,
+        lab        TEXT NOT NULL,
+        message    TEXT NOT NULL,
+        rating     INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now'))
+      )`);
+      // Add rating column if upgrading from older schema
+      try { db.run('ALTER TABLE feedback ADD COLUMN rating INTEGER DEFAULT 0'); } catch (e) { }
+      saveDB();
+      loadFeedback();
+    });
+
+    function fmtDate(dt) {
+      if (!dt) return '—';
+      try {
+        const d = new Date(dt.replace(' ', 'T') + (dt.includes('T') ? '' : 'Z'));
+        if (isNaN(d)) return dt;
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${d.getFullYear()}-${months[d.getMonth()]}-${String(d.getDate()).padStart(2, '0')}`;
+      } catch (e) { return dt; }
+    }
+
+    function loadFeedback() {
+      const r = db.exec('SELECT id_number, lab, created_at, message, rating FROM feedback ORDER BY id DESC');
+      allFeedback = (r.length && r[0].values.length)
+        ? r[0].values.map(row => ({ id_number: row[0], lab: row[1], created_at: row[2], message: row[3], rating: row[4] || 0 }))
+        : [];
+      currentPage = 1;
+      renderPage();
+    }
+
+    function renderStars(rating) {
+      const r = parseInt(rating) || 0;
+      return Array.from({ length: 5 }, (_, i) =>
+        `<span class="${i < r ? '' : 'star-empty'}">&#9733;</span>`
+      ).join('');
+    }
+
+    function renderPage() {
+      const q = document.getElementById('liveFilter').value.toLowerCase();
+      const filtered = q
+        ? allFeedback.filter(f => (f.id_number + f.lab + f.message).toLowerCase().includes(q))
+        : allFeedback;
+
+      const total = filtered.length;
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, total);
+      const pageRows = filtered.slice(start, end);
+
+      document.getElementById('pageInfo').textContent =
+        total ? `Showing ${start + 1} to ${end} of ${total} entries` : 'Showing 0 entries';
+      document.getElementById('pageNum').textContent = currentPage;
+
+      const tbody = document.getElementById('feedbackBody');
+      if (!pageRows.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="no-data">No feedback found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = pageRows.map((f, i) => `
+        <tr class="${i % 2 === 0 ? 'row-even' : 'row-odd'}">
+          <td>${f.id_number}</td>
+          <td>${f.lab}</td>
+          <td>${fmtDate(f.created_at)}</td>
+          <td><span class="star-rating">${renderStars(f.rating)}</span></td>
+          <td>${f.message}</td>
+        </tr>`).join('');
+    }
+
+    function liveFilter() { currentPage = 1; renderPage(); }
+    function changePage(dir) {
+      const q = document.getElementById('liveFilter').value.toLowerCase();
+      const filtered = q ? allFeedback.filter(f =>
+        (f.id_number + f.lab + f.message).toLowerCase().includes(q)) : allFeedback;
+      const maxPage = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+      currentPage = Math.min(Math.max(1, currentPage + dir), maxPage);
+      renderPage();
+    }
+
+    function doSearch() {
+      const q = val('searchInput');
+      if (!q) { document.getElementById('searchResults').innerHTML = ''; return; }
+      const r = db.exec(
+        `SELECT id_number,firstname,lastname FROM students WHERE id_number LIKE ? OR firstname LIKE ? OR lastname LIKE ?`,
+        [`%${q}%`, `%${q}%`, `%${q}%`]
+      );
+      const el = document.getElementById('searchResults');
+      if (!r.length || !r[0].values.length) { el.innerHTML = '<p style="color:#888;font-size:0.88rem;">No students found.</p>'; return; }
+      el.innerHTML = r[0].values.map(row =>
+        `<div class="search-result-row"><strong>${row[0]}</strong> — ${row[1]} ${row[2]}</div>`).join('');
+    }
+  </script>
+</body>
+
+</html>

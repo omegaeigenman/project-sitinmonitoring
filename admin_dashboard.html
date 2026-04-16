@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — CCS</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── Dashboard grid ── */
+    .dash-section-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      text-align: center;
+      margin: 1.8rem 0 1rem;
+      letter-spacing: -.01em;
+    }
+
+    /* ── Stat cards ── */
+    .stat-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.4rem;
+    }
+
+    @media (max-width: 640px) {
+      .stat-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #1e3a6e 0%, #2547a0 100%);
+      border-radius: 12px;
+      padding: 1.1rem 1.3rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 4px 16px rgba(30, 58, 110, .25);
+    }
+
+    .stat-card-icon {
+      font-size: 2rem;
+      width: 52px;
+      height: 52px;
+      background: rgba(255, 255, 255, .15);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .stat-card-label {
+      font-size: 0.78rem;
+      opacity: .8;
+      margin-bottom: .25rem;
+    }
+
+    .stat-card-val {
+      font-size: 1.8rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    /* ── Top section 2-col ── */
+    .top-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.1rem;
+      margin-bottom: 1.4rem;
+    }
+
+    @media (max-width: 800px) {
+      .top-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Leaderboard ── */
+    .lb-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46, 64, 153, .08);
+      overflow: hidden;
+    }
+
+    .lb-header {
+      background: linear-gradient(90deg, #1e3a6e 0%, #2547a0 100%);
+      color: #fff;
+      padding: .7rem 1.1rem;
+      font-weight: 700;
+      font-size: .95rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .lb-formula {
+      display: flex;
+      gap: .5rem;
+      padding: .6rem 1rem;
+      background: #f8f9ff;
+      border-bottom: 1px solid #e8ecf8;
+      flex-wrap: wrap;
+    }
+
+    .lb-pill {
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .22rem .65rem;
+      border-radius: 20px;
+      font-size: .76rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .lb-pill-pts {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .lb-pill-hrs {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .lb-pill-task {
+      background: #ede9fe;
+      color: #4c1d95;
+    }
+
+    .lb-pill-score {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .lb-pill .pill-pct {
+      font-size: .68rem;
+      opacity: .75;
+    }
+
+    .lb-body {
+      padding: .6rem .8rem 1rem;
+    }
+
+    /* podium */
+    .lb-podium {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: .5rem;
+      margin: .8rem 0 1.1rem;
+    }
+
+    .podium-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .3rem;
+    }
+
+    .podium-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      font-weight: 700;
+      font-size: .95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border: 3px solid #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+    }
+
+    .podium-avatar.rank-1 {
+      width: 58px;
+      height: 58px;
+      font-size: 1.1rem;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+    }
+
+    .podium-avatar.rank-2 {
+      background: linear-gradient(135deg, #6b7280, #374151);
+    }
+
+    .podium-avatar.rank-3 {
+      background: linear-gradient(135deg, #92400e, #b45309);
+    }
+
+    .podium-crown {
+      font-size: .95rem;
+    }
+
+    .podium-name {
+      font-size: .72rem;
+      font-weight: 600;
+      color: #1a1a2e;
+      text-align: center;
+      max-width: 68px;
+      word-break: break-word;
+    }
+
+    .podium-score {
+      font-size: .7rem;
+      color: #6b7280;
+    }
+
+    .podium-bar {
+      border-radius: 6px 6px 0 0;
+      width: 52px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      font-size: .72rem;
+      font-weight: 700;
+      color: #fff;
+      padding-bottom: 4px;
+    }
+
+    .podium-bar.rank-1 {
+      background: linear-gradient(180deg, #fbbf24, #f59e0b);
+      height: 70px;
+    }
+
+    .podium-bar.rank-2 {
+      background: linear-gradient(180deg, #9ca3af, #6b7280);
+      height: 50px;
+    }
+
+    .podium-bar.rank-3 {
+      background: linear-gradient(180deg, #d97706, #92400e);
+      height: 38px;
+    }
+
+    /* list rows */
+    .lb-list {
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+    }
+
+    .lb-row {
+      display: grid;
+      grid-template-columns: 26px 1fr 44px 42px 40px 50px;
+      align-items: center;
+      gap: .4rem;
+      padding: .42rem .55rem;
+      border-radius: 7px;
+      font-size: .8rem;
+      background: #f8f9fc;
+      transition: background .12s;
+    }
+
+    .lb-row:hover {
+      background: #eef1ff;
+    }
+
+    .lb-row.top3 {
+      background: #fef9ec;
+    }
+
+    .lb-rank-num {
+      font-weight: 700;
+      color: #6b7280;
+      text-align: center;
+      font-size: .78rem;
+    }
+
+    .lb-name {
+      font-weight: 600;
+      color: #1a1a2e;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lb-cell {
+      text-align: center;
+      font-size: .78rem;
+      color: #555;
+    }
+
+    .lb-score-badge {
+      background: linear-gradient(90deg, #1e3a6e, #2547a0);
+      color: #fff;
+      border-radius: 20px;
+      padding: .18rem .5rem;
+      font-size: .74rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .lb-col-hdr {
+      display: grid;
+      grid-template-columns: 26px 1fr 44px 42px 40px 50px;
+      gap: .4rem;
+      padding: .2rem .55rem;
+      font-size: .7rem;
+      font-weight: 600;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: .25rem;
+    }
+
+    .lb-col-hdr span {
+      text-align: center;
+    }
+
+    .lb-col-hdr span:first-child {
+      text-align: left;
+    }
+
+    .lb-empty {
+      text-align: center;
+      color: #aaa;
+      font-size: .84rem;
+      padding: 1.5rem 0;
+    }
+
+    /* ── Analytics ── */
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.1rem;
+      margin-bottom: 1.4rem;
+    }
+
+    @media (max-width: 800px) {
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .analytics-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46, 64, 153, .08);
+      overflow: hidden;
+    }
+
+    .analytics-header {
+      background: linear-gradient(90deg, #1e3a6e 0%, #2547a0 100%);
+      color: #fff;
+      padding: .65rem 1.1rem;
+      font-weight: 700;
+      font-size: .92rem;
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+    }
+
+    .analytics-body {
+      padding: .9rem 1rem;
+    }
+
+    /* ── Reward / Points ── */
+    .reward-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 1.1rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 900px) {
+      .reward-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .reward-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46, 64, 153, .08);
+      overflow: hidden;
+    }
+
+    .reward-header {
+      background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+      color: #fff;
+      padding: .65rem 1.1rem;
+      font-weight: 700;
+      font-size: .92rem;
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+    }
+
+    .reward-body {
+      padding: 1rem 1.1rem;
+    }
+
+    .reward-field {
+      margin-bottom: .7rem;
+    }
+
+    .reward-label {
+      font-size: .82rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: .3rem;
+    }
+
+    .reward-input {
+      width: 100%;
+      border: 1.5px solid #d0d4e8;
+      border-radius: 7px;
+      padding: .45rem .75rem;
+      font-family: inherit;
+      font-size: .88rem;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color .15s;
+    }
+
+    .reward-input:focus {
+      border-color: #059669;
+    }
+
+    .reward-submit {
+      width: 100%;
+      background: linear-gradient(90deg, #059669, #10b981);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: .52rem;
+      font-weight: 700;
+      font-size: .9rem;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: .2rem;
+      transition: opacity .15s;
+    }
+
+    .reward-submit:hover {
+      opacity: .88;
+    }
+
+    .points-log-header {
+      background: linear-gradient(90deg, #7c3aed, #a855f7);
+    }
+
+    .pts-log-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .42rem .55rem;
+      border-radius: 6px;
+      font-size: .82rem;
+      margin-bottom: .3rem;
+      background: #f8f9fc;
+    }
+
+    .pts-log-row:hover {
+      background: #f3f0ff;
+    }
+
+    .pts-badge {
+      background: #ede9fe;
+      color: #6d28d9;
+      font-weight: 700;
+      padding: .14rem .5rem;
+      border-radius: 12px;
+      font-size: .75rem;
+      white-space: nowrap;
+    }
+
+    .pts-reason {
+      color: #374151;
+      flex: 1;
+      padding: 0 .6rem;
+    }
+
+    .pts-date {
+      color: #9ca3af;
+      font-size: .73rem;
+      white-space: nowrap;
+    }
+
+    .pts-empty {
+      text-align: center;
+      color: #aaa;
+      font-size: .84rem;
+      padding: 1.2rem 0;
+    }
+
+    /* ── Search student autocomplete in reward ── */
+    .reward-student-display {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 7px;
+      padding: .45rem .75rem;
+      font-size: .85rem;
+      color: #065f46;
+      font-weight: 600;
+      display: none;
+      margin-top: .4rem;
+    }
+
+    /* quick preset chips */
+    .preset-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      margin-top: .4rem;
+    }
+
+    .preset-chip {
+      background: #ede9fe;
+      color: #6d28d9;
+      border: none;
+      border-radius: 20px;
+      padding: .22rem .65rem;
+      font-size: .76rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .12s;
+    }
+
+    .preset-chip:hover {
+      background: #ddd6fe;
+    }
+  </style>
+</head>
+
+<body class="admin-body">
+
+  <nav class="navbar admin-navbar">
+    <div class="admin-nav-brand">
+      <img src="CCS.png" alt="CCS" class="admin-logo" onerror="this.style.display='none'" />
+      <span class="admin-brand">College of Computer Studies Admin</span>
+    </div>
+    <ul class="nav-links admin-nav" id="navLinks">
+      <li><a href="admin_dashboard.html" class="active">Home</a></li>
+      <li><a href="#" onclick="openModal('searchModal');return false;">Search</a></li>
+      <li><a href="admin_students.html">Students</a></li>
+      <li><a href="admin_sitin.html">Sit-in</a></li>
+      <li><a href="admin_sitin_records.html">View Sit-in Records</a></li>
+      <li><a href="admin_reports.html">Sit-in Reports</a></li>
+      <li><a href="admin_feedback.html">Feedback Reports</a></li>
+      <li><a href="admin_reservation.html">Reservation</a></li>
+      <li><a href="admin_leaderboard.html">Leaderboard</a></li>
+      <li><a href="admin_analytics.html">Analytics</a></li>
+      <li><a href="admin_rewards.html">Add Reward/Points</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="adminLogout();return false;">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="admin-main">
+
+    <!-- ── STAT CARDS ── -->
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-card-icon">&#128101;</div>
+        <div>
+          <div class="stat-card-label">Students Registered</div>
+          <div class="stat-card-val" id="statReg">0</div>
+        </div>
+      </div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#059669 0%,#10b981 100%);">
+        <div class="stat-card-icon">&#128205;</div>
+        <div>
+          <div class="stat-card-label">Currently Sit-in</div>
+          <div class="stat-card-val" id="statCur">0</div>
+        </div>
+      </div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#7c3aed 0%,#a855f7 100%);">
+        <div class="stat-card-icon">&#128203;</div>
+        <div>
+          <div class="stat-card-label">Total Sit-in</div>
+          <div class="stat-card-val" id="statTot">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TOP ROW: Pie chart + Announcement ── -->
+    <div class="top-grid">
+
+      <!-- Statistics / Pie -->
+      <div class="admin-card">
+        <div class="admin-card-header">&#128200; Sit-in by Purpose</div>
+        <div class="admin-card-body">
+          <div class="chart-wrap">
+            <canvas id="pieChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Announcement -->
+      <div class="admin-card">
+        <div class="admin-card-header">&#128227; Announcement</div>
+        <div class="admin-card-body">
+          <p style="font-size:0.88rem;color:#555;margin-bottom:0.4rem;">New Announcement</p>
+          <textarea id="annText" class="admin-textarea" rows="3"></textarea>
+          <button class="admin-btn-green" onclick="postAnnouncement()" style="margin-top:.4rem;">Submit</button>
+          <h3 class="posted-label">Posted Announcements</h3>
+          <hr class="admin-hr" />
+          <div id="annList"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.admin-main -->
+
+  <!-- ── Search Modal ── -->
+  <div class="modal-overlay" id="searchModal">
+    <div class="modal-box search-modal-box">
+      <div class="modal-header-row">
+        <h3 class="modal-inner-title">Search Student</h3>
+        <button class="modal-close-x" onclick="closeModal('searchModal')">&#x2715;</button>
+      </div>
+      <input type="text" class="form-input" id="searchInput" placeholder="Search..." oninput="doSearch()" />
+      <hr class="admin-hr" style="margin:0.9rem 0 0.7rem;" />
+      <div style="text-align:right;">
+        <button class="admin-btn-blue" onclick="doSearch()">Search</button>
+      </div>
+      <div id="searchResults" style="margin-top:0.8rem;"></div>
+    </div>
+  </div>
+
+  <!-- ── Sit-in Modal ── -->
+  <div class="modal-overlay" id="sitinModal">
+    <div class="modal-box sitin-modal-box">
+      <div class="modal-header-row">
+        <h3 class="modal-inner-title">Sit In Form</h3>
+        <button class="modal-close-x" onclick="closeModal('sitinModal')">&#x2715;</button>
+      </div>
+      <div class="sitin-form-grid">
+        <label class="sitin-label">ID Number:</label>
+        <input class="form-input" id="sId" readonly style="background:#f8f9fc;">
+        <label class="sitin-label">Student Name:</label>
+        <input class="form-input" id="sName" readonly style="background:#f8f9fc;">
+        <label class="sitin-label">Purpose:</label>
+        <select class="form-input form-select" id="sPurpose">
+          <option value="" disabled selected>Select programming language</option>
+        </select>
+        <label class="sitin-label">Lab:</label>
+        <select class="form-input form-select" id="sLab">
+          <option value="" disabled selected>Select lab room</option>
+          <option value="524">Room 524</option>
+          <option value="526">Room 526</option>
+          <option value="530">Room 530</option>
+          <option value="542">Room 542</option>
+          <option value="544">Room 544</option>
+        </select>
+        <label class="sitin-label">Remaining Session:</label>
+        <input class="form-input" id="sSession" readonly style="background:#f8f9fc;">
+      </div>
+      <div class="modal-footer-row" style="margin-top:1rem;">
+        <button class="admin-btn-gray" onclick="closeModal('sitinModal')">Close</button>
+        <button class="admin-btn-blue" onclick="submitSitinFromDashboard()">Sit In</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    requireAdmin();
+    let pieChart = null;
+
+    initDB().then(() => {
+      dbEnsurePointsTable();
+      loadStats();
+      buildPie();
+      loadAnnouncements();
+    });
+
+    // ── Stats ──────────────────────────────────────────────────
+    function loadStats() {
+      document.getElementById('statReg').textContent = dbCountStudents();
+      document.getElementById('statCur').textContent = dbCountActiveSitins();
+      document.getElementById('statTot').textContent = dbCountTotalSitins();
+    }
+
+    // ── Pie chart ──────────────────────────────────────────────
+    function buildPie() {
+      const data = dbGetSitinsByPurpose();
+      let labels = [], counts = [];
+      if (data.length) {
+        data.forEach(d => { labels.push(d.purpose); counts.push(d.count); });
+      } else { labels = ['No sit-ins yet']; counts = [1]; }
+      const colors = ['#3b82f6', '#ef4444', '#f59e0b', '#f97316', '#ec4899', '#06b6d4',
+        '#8b5cf6', '#22c55e', '#84cc16', '#14b8a6', '#f43f5e', '#a855f7'];
+      const ctx = document.getElementById('pieChart').getContext('2d');
+      if (pieChart) pieChart.destroy();
+      pieChart = new Chart(ctx, {
+        type: 'pie',
+        data: { labels, datasets: [{ data: counts, backgroundColor: colors.slice(0, labels.length), borderWidth: 1 }] },
+        options: {
+          responsive: true, plugins: {
+            legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 14 } },
+            title: { display: true, text: 'Sit-ins by Programming Language', font: { size: 12 } }
+          }
+        }
+      });
+    }
+
+    // ── Announcements ──────────────────────────────────────────
+    function loadAnnouncements() {
+      const list = JSON.parse(localStorage.getItem('ccs_announcements') || '[]');
+      if (!list.length) {
+        list.push({ date: '2026-Feb-11', text: '' });
+        list.push({ date: '2024-May-08', text: 'Important Announcement — We are excited to announce the launch of our new website! 🎉 Explore our latest products and services now!' });
+        localStorage.setItem('ccs_announcements', JSON.stringify(list));
+      }
+      document.getElementById('annList').innerHTML = list.map(a => `
+        <div style="padding:0.4rem 0;">
+          <div class="ann-post-meta">CCS Admin | ${a.date}</div>
+          ${a.text ? `<div class="ann-post-text">${a.text}</div>` : ''}
+          <hr class="admin-hr" style="margin-top:0.5rem;"/>
+        </div>`).join('');
+    }
+
+    function postAnnouncement() {
+      const text = document.getElementById('annText').value.trim();
+      if (!text) { showToast('Please enter an announcement.', 'error'); return; }
+      const list = JSON.parse(localStorage.getItem('ccs_announcements') || '[]');
+      list.unshift({ date: fmtDate(new Date()), text });
+      localStorage.setItem('ccs_announcements', JSON.stringify(list));
+      document.getElementById('annText').value = '';
+      loadAnnouncements();
+      showToast('Announcement posted!', 'success');
+    }
+
+    // ── Search ─────────────────────────────────────────────────
+    function doSearch() {
+      const q = val('searchInput');
+      if (!q) { document.getElementById('searchResults').innerHTML = ''; return; }
+      const r = db.exec(
+        `SELECT id_number,firstname,lastname,course,year_level,session_cnt FROM students
+         WHERE id_number LIKE ? OR firstname LIKE ? OR lastname LIKE ?`,
+        [`%${q}%`, `%${q}%`, `%${q}%`]
+      );
+      const el = document.getElementById('searchResults');
+      if (!r.length || !r[0].values.length) {
+        el.innerHTML = '<p style="color:#888;font-size:0.88rem;">No students found.</p>'; return;
+      }
+      el.innerHTML = r[0].values.map(row => `
+        <div class="search-result-row search-result-clickable" onclick="quickSitin('${row[0]}')">
+          <strong>${row[0]}</strong> — ${row[1]} ${row[2]}
+          <span style="float:right;background:#2563eb;color:#fff;padding:2px 8px;border-radius:4px;font-size:.75rem;">Sit-in →</span>
+        </div>`).join('');
+    }
+
+    function quickSitin(id_number) {
+      const s = dbGetStudent(id_number);
+      if (!s) return;
+      document.getElementById('sId').value = s.id_number;
+      document.getElementById('sName').value = [s.firstname, s.lastname].join(' ');
+      document.getElementById('sSession').value = s.session_cnt;
+      const sel = document.getElementById('sPurpose');
+      if (sel.options.length <= 1) {
+        PROG_LANGUAGES.forEach(lang => {
+          const opt = document.createElement('option');
+          opt.value = opt.textContent = lang;
+          sel.appendChild(opt);
+        });
+      }
+      closeModal('searchModal');
+      openModal('sitinModal');
+    }
+
+    function submitSitinFromDashboard() {
+      const id = val('sId');
+      const name = val('sName');
+      const purpose = val('sPurpose');
+      const lab = val('sLab');
+      const session = parseInt(val('sSession'));
+      if (!purpose || !lab) { showToast('Please select Purpose and Lab', 'error'); return; }
+      dbAddSitin(id, name, purpose, lab, session);
+      showToast('Sit-in recorded!', 'success');
+      closeModal('sitinModal');
+      loadStats();
+      setTimeout(() => { window.location.href = 'admin_sitin.html'; }, 800);
+    }
+  </script>
+</body>
+
+</html>

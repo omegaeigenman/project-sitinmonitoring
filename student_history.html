@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>History &amp; Feedback — CCS</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body { background: #eef0f5; }
+    .page-wrap { max-width: 960px; margin: 0 auto; padding: 1.4rem 1rem 2rem; }
+
+    .page-title {
+      font-size: 1.4rem; font-weight: 700; color: #1a1a2e;
+      margin-bottom: 1.2rem; display: flex; align-items: center; gap: .5rem;
+    }
+
+    .back-link {
+      display: inline-block; text-decoration: none;
+      color: #2547a0; font-size: .88rem; margin-bottom: .8rem;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    /* ── Sub tabs ── */
+    .sub-tabs {
+      display: flex;
+      background: #fff;
+      border-radius: 10px 10px 0 0;
+      border: 1px solid #dde3f0;
+      border-bottom: none;
+      overflow-x: auto;
+    }
+    .sub-tabs::-webkit-scrollbar { height: 3px; }
+    .sub-tab {
+      flex-shrink: 0;
+      padding: .72rem 1.2rem;
+      font-size: .88rem;
+      font-weight: 600;
+      color: #6b7280;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: all .13s;
+    }
+    .sub-tab:hover   { color: #1e2a6e; }
+    .sub-tab.active  { color: #1e2a6e; border-bottom-color: #1e2a6e; background: #f8f9ff; }
+
+    .tab-panel {
+      background: #fff;
+      border-radius: 0 0 12px 12px;
+      border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46,64,153,.07);
+      padding: 1.2rem;
+      display: none;
+    }
+    .tab-panel.active { display: block; }
+
+    /* ── Table ── */
+    .tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e5e7eb; }
+    .data-table {
+      width: 100%; border-collapse: collapse; font-size: .84rem;
+    }
+    .data-table thead tr { background: #f4f6fb; }
+    .data-table th {
+      padding: .6rem .85rem; text-align: left;
+      font-weight: 600; color: #374151;
+      border-bottom: 2px solid #e5e7eb;
+      white-space: nowrap; font-size: .78rem;
+    }
+    .data-table td {
+      padding: .52rem .85rem;
+      border-bottom: 1px solid #f0f2f8;
+      color: #374151;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #f8faff; }
+    .tbl-empty { text-align: center; padding: 2.2rem; color: #aaa; font-size: .88rem; }
+
+    /* status badges */
+    .badge {
+      display: inline-block; padding: .15rem .55rem;
+      border-radius: 12px; font-size: .74rem; font-weight: 600;
+    }
+    .badge-active { background: #dcfce7; color: #16a34a; }
+    .badge-done   { background: #fee2e2; color: #dc2626; }
+
+    /* stars */
+    .stars { color: #f59e0b; font-size: .82rem; }
+    .stars .e { color: #d1d5db; }
+
+    /* feedback cards */
+    .fb-card {
+      background: #f8f9fc;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: .85rem 1rem;
+      margin-bottom: .65rem;
+    }
+    .fb-card-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: .35rem; flex-wrap: wrap; gap: .3rem;
+    }
+    .fb-lab  { font-size: .78rem; font-weight: 700; color: #1e2a6e; background: #eef1ff; padding: .15rem .5rem; border-radius: 8px; }
+    .fb-date { font-size: .73rem; color: #9ca3af; }
+    .fb-msg  { font-size: .87rem; color: #374151; line-height: 1.55; }
+    .fb-empty{ text-align: center; padding: 2rem; color: #aaa; font-size: .88rem; }
+
+    /* filter bar */
+    .filter-bar {
+      display: flex; align-items: center; gap: .6rem;
+      margin-bottom: .9rem; flex-wrap: wrap;
+    }
+    .filter-bar input {
+      padding: .38rem .75rem; border: 1.5px solid #d0d4e8;
+      border-radius: 7px; font-family: inherit; font-size: .84rem;
+      outline: none; width: 200px;
+    }
+    .filter-bar input:focus { border-color: #1e2a6e; }
+    .filter-bar select {
+      padding: .38rem .65rem; border: 1.5px solid #d0d4e8;
+      border-radius: 7px; font-family: inherit; font-size: .84rem;
+      outline: none; cursor: pointer;
+    }
+    .record-count { font-size: .8rem; color: #888; margin-left: auto; }
+  </style>
+</head>
+<body>
+  <nav class="navbar dash-navbar">
+    <span class="dash-brand">&#127979; CCS Dashboard</span>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="dashboard.html">Home</a></li>
+      <li><a href="student_session.html">My Sessions</a></li>
+      <li><a href="student_history.html" class="active">History &amp; Feedback</a></li>
+      <li><a href="student_reservation.html">Reservation</a></li>
+      <li><a href="student_notifications.html">Notifications</a></li>
+      <li><a href="edit_profile.html">Edit Profile</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="handleLogout()">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="page-wrap">
+    <a href="dashboard.html" class="back-link">&#8592; Back to Dashboard</a>
+    <div class="page-title">&#128203; History &amp; Feedback</div>
+
+    <!-- Sub tabs -->
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="switchPane('pane-sitin', this)">&#127970; Sit-in History</button>
+      <button class="sub-tab" onclick="switchPane('pane-feedback', this)">&#128172; My Feedback</button>
+    </div>
+
+    <!-- Sit-in History -->
+    <div class="tab-panel active" id="pane-sitin">
+      <div class="filter-bar">
+        <input type="text" id="sitinFilter" placeholder="&#128269; Search..." oninput="filterSitin()"/>
+        <select id="statusFilter" onchange="filterSitin()">
+          <option value="">All Status</option>
+          <option value="Active">Active</option>
+          <option value="Done">Done</option>
+        </select>
+        <span class="record-count" id="sitinCount"></span>
+      </div>
+      <div class="tbl-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Purpose / Language</th>
+              <th>Lab</th>
+              <th>Time In</th>
+              <th>Time Out</th>
+              <th>Duration</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="sitinBody">
+            <tr><td colspan="7" class="tbl-empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="tab-panel" id="pane-feedback">
+      <div class="filter-bar">
+        <input type="text" id="fbFilter" placeholder="&#128269; Search..." oninput="filterFeedback()"/>
+        <span class="record-count" id="fbCount"></span>
+      </div>
+      <div id="fbList"><div class="fb-empty">Loading...</div></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    let _allSitin    = [];
+    let _allFeedback = [];
+
+    function switchPane(id, btn) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    function fmtDT(dt) {
+      if (!dt) return '—';
+      try {
+        const d = new Date(dt.replace(' ','T') + (dt.includes('T') ? '' : 'Z'));
+        if (isNaN(d)) return dt;
+        return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+          + '&nbsp;' + d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+      } catch(e){ return dt; }
+    }
+
+    function calcDuration(ti, to) {
+      if (!ti || !to) return '—';
+      try {
+        const a = new Date(ti.replace(' ','T')+(ti.includes('T')?'':'Z'));
+        const b = new Date(to.replace(' ','T')+(to.includes('T')?'':'Z'));
+        const mins = Math.round((b - a) / 60000);
+        if (mins < 1) return '<1 min';
+        if (mins < 60) return mins + ' min';
+        return Math.floor(mins/60) + 'h ' + (mins%60) + 'm';
+      } catch(e){ return '—'; }
+    }
+
+    function renderStars(r) {
+      return Array.from({length:5},(_,i)=>
+        `<span class="${i<r?'':'e'}">&#9733;</span>`).join('');
+    }
+
+    function filterSitin() {
+      const q   = document.getElementById('sitinFilter').value.toLowerCase();
+      const st  = document.getElementById('statusFilter').value;
+      const rows = _allSitin.filter(r =>
+        (!q  || r.purpose.toLowerCase().includes(q) || r.lab.toLowerCase().includes(q)) &&
+        (!st || r.status === st)
+      );
+      renderSitinTable(rows);
+    }
+
+    function renderSitinTable(rows) {
+      document.getElementById('sitinCount').textContent = `${rows.length} record(s)`;
+      const tbody = document.getElementById('sitinBody');
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="tbl-empty">No sit-in records found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map((r,i) => `
+        <tr>
+          <td>${r.id}</td>
+          <td>${r.purpose}</td>
+          <td>Room ${r.lab}</td>
+          <td>${fmtDT(r.time_in)}</td>
+          <td>${fmtDT(r.time_out)}</td>
+          <td>${calcDuration(r.time_in, r.time_out)}</td>
+          <td><span class="badge ${r.status==='Active'?'badge-active':'badge-done'}">${r.status}</span></td>
+        </tr>`).join('');
+    }
+
+    function filterFeedback() {
+      const q = document.getElementById('fbFilter').value.toLowerCase();
+      const rows = _allFeedback.filter(r =>
+        !q || r.message.toLowerCase().includes(q) || r.lab.toLowerCase().includes(q)
+      );
+      renderFeedbackList(rows);
+    }
+
+    function renderFeedbackList(rows) {
+      document.getElementById('fbCount').textContent = `${rows.length} record(s)`;
+      const el = document.getElementById('fbList');
+      if (!rows.length) {
+        el.innerHTML = '<div class="fb-empty">No feedback records found.</div>';
+        return;
+      }
+      el.innerHTML = rows.map(r => `
+        <div class="fb-card">
+          <div class="fb-card-meta">
+            <span class="fb-lab">Lab ${r.lab}</span>
+            <div class="stars">${renderStars(parseInt(r.rating)||0)}</div>
+            <span class="fb-date">${r.created_at || '—'}</span>
+          </div>
+          <div class="fb-msg">${r.message || '<em style="color:#aaa;">No message</em>'}</div>
+        </div>`).join('');
+    }
+
+    async function init() {
+      const sess = sessionGet();
+      if (!sess) { window.location.href = 'login.html'; return; }
+      await initDB();
+
+      // Sit-in history
+      const rs = db.exec(
+        `SELECT id,purpose,lab,time_in,time_out,status FROM sit_in
+         WHERE id_number=? ORDER BY id DESC`, [sess.id_number]);
+      _allSitin = (rs.length && rs[0].values.length)
+        ? rs[0].values.map(v => ({id:v[0],purpose:v[1],lab:v[2],time_in:v[3],time_out:v[4],status:v[5]}))
+        : [];
+      filterSitin();
+
+      // Feedback
+      try {
+        db.run(`CREATE TABLE IF NOT EXISTS feedback (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          id_number TEXT NOT NULL, lab TEXT NOT NULL,
+          message TEXT NOT NULL, rating INTEGER DEFAULT 0,
+          created_at TEXT DEFAULT (datetime('now')))`);
+        try { db.run('ALTER TABLE feedback ADD COLUMN rating INTEGER DEFAULT 0'); } catch(e){}
+      } catch(e){}
+
+      const rf = db.exec(
+        `SELECT lab,message,rating,created_at FROM feedback
+         WHERE id_number=? ORDER BY id DESC`, [sess.id_number]);
+      _allFeedback = (rf.length && rf[0].values.length)
+        ? rf[0].values.map(v => ({lab:v[0],message:v[1],rating:v[2],created_at:v[3]}))
+        : [];
+      filterFeedback();
+    }
+
+    function handleLogout() { sessionClear(); window.location.href = 'login.html'; }
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

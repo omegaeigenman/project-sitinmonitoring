@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — CCS Sit-in Monitoring</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+  <nav class="navbar dash-navbar">
+    <span class="dash-brand">&#127979; CCS Dashboard</span>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="dashboard.html" class="active">Home</a></li>
+      <li><a href="student_session.html">My Sessions</a></li>
+      <li><a href="student_history.html">History &amp; Feedback</a></li>
+      <li><a href="student_reservation.html">Reservation</a></li>
+      <li><a href="student_notifications.html">Notifications</a></li>
+      <li><a href="edit_profile.html">Edit Profile</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="handleLogout()">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="dash-grid">
+
+    <!-- COL 1: Student Information -->
+    <div class="dash-col">
+      <div class="dash-col-header">Student Information</div>
+      <div class="dash-col-body student-info-body">
+        <div class="student-avatar-wrap">
+          <div class="avatar-ring" id="avatarRing">
+            <img id="avatarImg" src="" alt="" class="avatar-photo" style="display:none;"/>
+            <div class="avatar-initials" id="avatarInitials"></div>
+          </div>
+        </div>
+        <div class="student-divider"></div>
+        <div class="student-details" id="studentDetails">
+          <p style="color:#aaa;font-size:0.85rem;">Loading...</p>
+        </div>
+        <!-- Quick nav links -->
+        <div style="margin-top:1.1rem;display:flex;flex-direction:column;gap:.45rem;">
+          <a href="student_session.html"       style="display:flex;align-items:center;gap:.5rem;padding:.45rem .7rem;background:#eef1ff;border-radius:8px;text-decoration:none;font-size:.84rem;font-weight:600;color:#1e2a6e;border:1px solid #c7d2fe;">&#9200; My Sessions</a>
+          <a href="student_history.html"       style="display:flex;align-items:center;gap:.5rem;padding:.45rem .7rem;background:#f0fdf4;border-radius:8px;text-decoration:none;font-size:.84rem;font-weight:600;color:#065f46;border:1px solid #bbf7d0;">&#128203; History &amp; Feedback</a>
+          <a href="student_reservation.html"   style="display:flex;align-items:center;gap:.5rem;padding:.45rem .7rem;background:#fff7ed;border-radius:8px;text-decoration:none;font-size:.84rem;font-weight:600;color:#9a3412;border:1px solid #fed7aa;">&#128197; Reservation</a>
+          <!-- ── Notification widget with live badge ── -->
+          <a href="student_notifications.html" id="notifWidget" style="display:flex;align-items:center;gap:.55rem;padding:.45rem .7rem;background:linear-gradient(135deg,#fff1f1 0%,#fff7ed 100%);border-radius:8px;text-decoration:none;font-size:.84rem;font-weight:600;color:#7f1d1d;border:1.5px solid #fca5a5;position:relative;transition:box-shadow .18s,border-color .18s;">
+            <span style="font-size:1.15rem;line-height:1;" id="notifBell">&#128276;</span>
+            <span>Notifications</span>
+            <span id="notifBadge" style="display:none;position:absolute;top:-7px;right:-7px;min-width:20px;height:20px;border-radius:50%;background:#ef4444;color:#fff;font-size:.7rem;font-weight:700;line-height:20px;text-align:center;padding:0 4px;box-shadow:0 2px 8px rgba(239,68,68,.6);border:2px solid #fff;">0</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- COL 2: Announcement -->
+    <div class="dash-col">
+      <div class="dash-col-header ann-header">&#128227; Announcement</div>
+      <div class="dash-col-body ann-body">
+        <div id="annList"><p style="color:#aaa;font-size:0.85rem;">Loading announcements...</p></div>
+      </div>
+    </div>
+
+    <!-- COL 3: Rules and Regulation -->
+    <div class="dash-col">
+      <div class="dash-col-header rules-header">Rules and Regulation</div>
+      <div class="dash-col-body rules-body">
+        <h3 class="rules-uni">University of Cebu</h3>
+        <h4 class="rules-college">COLLEGE OF INFORMATION &amp; COMPUTER STUDIES</h4>
+        <h4 class="rules-title">LABORATORY RULES AND REGULATIONS</h4>
+        <p class="rules-intro">To avoid embarrassment and maintain camaraderie with your friends and superiors at our laboratories, please observe the following:</p>
+        <p class="rules-item">1. Maintain silence, proper decorum, and discipline inside the laboratory. Mobile phones, walkmans and other personal pieces of equipment must be switched off.</p>
+        <p class="rules-item">2. Games are not allowed inside the lab. This includes computer-related games, card games and other games that may disturb the operation of the lab.</p>
+        <p class="rules-item">3. Surfing the Internet is allowed only with the permission of the instructor. Downloading and installing of software are strictly prohibited.</p>
+        <p class="rules-item">4. Getting access to other websites not related to the course (especially pornographic and illicit sites) is strictly prohibited.</p>
+        <p class="rules-item">5. Deleting computer files and changing the set-up of the computer is a major offense.</p>
+        <p class="rules-item">6. Observe computer time usage carefully. A fifteen-minute allowance is given for each use. Otherwise, the unit will be given to those who wish to &ldquo;sit-in&rdquo;.</p>
+        <p class="rules-item">7. Observe proper decorum while inside the laboratory.</p>
+        <ul class="rules-sublist">
+          <li>Do not get inside the lab unless the instructor is present.</li>
+          <li>All bags, knapsacks, and the likes must be deposited at the counter.</li>
+          <li>Follow the seating arrangement of your instructor.</li>
+          <li>At the end of class, all software programs must be closed.</li>
+          <li>Return all chairs to their proper places after using.</li>
+        </ul>
+        <p class="rules-item">8. Chewing gum, eating, drinking, smoking, and other forms of vandalism are prohibited inside the lab.</p>
+        <p class="rules-item">9. Anyone causing a continual disturbance will be asked to leave the lab.</p>
+        <p class="rules-item">10. Persons exhibiting hostile or threatening behavior such as yelling, swearing, or disregarding requests made by lab personnel will be asked to leave the lab.</p>
+        <p class="rules-item">11. For serious offense, the lab personnel may call the Civil Security Office (CSU) for assistance.</p>
+        <p class="rules-item">12. Any technical problem or difficulty must be addressed to the laboratory supervisor, student assistant or instructor immediately.</p>
+        <h4 class="rules-title" style="margin-top:0.9rem;">DISCIPLINARY ACTION</h4>
+        <ul class="rules-sublist">
+          <li><strong>First Offense</strong> &mdash; The Head or the Dean or OIC recommends to the Guidance Center for a suspension from classes for each offender.</li>
+          <li><strong>Second and Subsequent Offenses</strong> &mdash; A recommendation for a heavier sanction will be endorsed to the Guidance Center.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Login success modal -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-box">
+      <div class="modal-check">&#10003;</div>
+      <h2 class="modal-title">Successful Login!</h2>
+      <p class="modal-msg" id="modalWelcome"></p>
+      <button class="modal-ok" onclick="document.getElementById('loginModal').classList.remove('show')">OK</button>
+    </div>
+  </div>
+
+  <style>
+    @keyframes bellRing {
+      0%,100%  { transform: rotate(0deg); }
+      10%,30%  { transform: rotate(-14deg); }
+      20%,40%  { transform: rotate(14deg); }
+      50%      { transform: rotate(0deg); }
+    }
+    @keyframes badgePop {
+      0%   { transform: scale(0); opacity: 0; }
+      70%  { transform: scale(1.25); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+    #notifBell        { animation: bellRing 2.5s ease-in-out infinite; }
+    #notifWidget:hover { box-shadow:0 4px 14px rgba(239,68,68,.28); border-color:#f87171; }
+    #notifWidget.no-unread #notifBell { animation: none; }
+    #notifBadge { animation: badgePop .3s ease-out; }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    async function loadDashboard() {
+      const sess = sessionGet();
+      if (!sess) { window.location.href = 'login.html'; return; }
+      await initDB();
+      dbEnsurePointsTable();
+      const student = dbGetStudent(sess.id_number);
+      if (!student) { sessionClear(); window.location.href = 'login.html'; return; }
+
+      const pic      = getProfilePic(student.id_number);
+      const initials = ((student.firstname[0]||'') + (student.lastname[0]||'')).toUpperCase();
+      if (pic) {
+        const img = document.getElementById('avatarImg');
+        img.src = pic; img.style.display = 'block';
+        document.getElementById('avatarInitials').style.display = 'none';
+      } else {
+        document.getElementById('avatarInitials').textContent   = initials;
+        document.getElementById('avatarInitials').style.display = 'flex';
+      }
+
+      const courseShort = COURSE_SHORT[student.course] || student.course;
+      const fullname    = [student.firstname, student.midname, student.lastname].filter(Boolean).join(' ');
+      const pts         = dbGetTotalPoints(student.id_number);
+
+      document.getElementById('studentDetails').innerHTML = `
+        <div class="student-detail-row"><span class="detail-icon">👤</span><span class="detail-text"><strong>Name:</strong> ${fullname}</span></div>
+        <div class="student-detail-row"><span class="detail-icon">🎓</span><span class="detail-text"><strong>Course:</strong> ${courseShort}</span></div>
+        <div class="student-detail-row"><span class="detail-icon">↕️</span><span class="detail-text"><strong>Year:</strong> ${student.year_level}</span></div>
+        <div class="student-detail-row"><span class="detail-icon">✉️</span><span class="detail-text"><strong>Email:</strong> ${student.email}</span></div>
+        <div class="student-detail-row"><span class="detail-icon">⏱️</span><span class="detail-text"><strong>Sessions Left:</strong> ${student.session_cnt} / 30</span></div>
+        <div class="student-detail-row"><span class="detail-icon">⭐</span><span class="detail-text"><strong>Reward Points:</strong> ${pts}</span></div>
+      `;
+
+      if (localStorage.getItem('ccs_show_modal') === '1') {
+        localStorage.removeItem('ccs_show_modal');
+        document.getElementById('modalWelcome').textContent = `Welcome! ${fullname}`;
+        document.getElementById('loginModal').classList.add('show');
+      }
+      loadAnnouncements();
+      updateNotifBadge(student);
+    }
+
+    function loadAnnouncements() {
+      const list = JSON.parse(localStorage.getItem('ccs_announcements') || '[]');
+      const container = document.getElementById('annList');
+      if (!list.length) { container.innerHTML = '<p style="color:#aaa;font-size:0.85rem;">No announcements yet.</p>'; return; }
+      container.innerHTML = list.map(a => `
+        <div class="ann-item">
+          <div class="ann-meta">CCS Admin | ${a.date}</div>
+          ${a.text ? `<div class="ann-content">${a.text}</div>` : ''}
+          <hr class="ann-divider"/>
+        </div>`).join('');
+    }
+
+    // ── Notification badge: counts unread items same as student_notifications.html ──
+    function updateNotifBadge(student) {
+      const readSet = new Set(JSON.parse(localStorage.getItem('ccs_read_notifs') || '[]'));
+      const ids = [];
+
+      // 1. Announcements
+      const anns = JSON.parse(localStorage.getItem('ccs_announcements') || '[]');
+      anns.forEach((a, i) => { if (a.text) ids.push('ann_' + i); });
+
+      // 2. Session alerts
+      if (student.session_cnt <= 5)                               ids.push('sess_low');
+      if (student.session_cnt <= 15 && student.session_cnt > 5)  ids.push('sess_mid');
+
+      // 3. Reservation updates
+      try {
+        const r = db.exec(
+          `SELECT id FROM reservations WHERE id_number=? AND status IN ('Accepted','Denied') ORDER BY rowid DESC LIMIT 10`,
+          [student.id_number]);
+        if (r.length && r[0].values.length) r[0].values.forEach(v => ids.push('res_' + v[0]));
+      } catch(e) {}
+
+      // 4. Points awarded
+      try {
+        dbGetPointsLog(student.id_number).slice(0, 5).forEach((_, i) => ids.push('pts_' + i));
+      } catch(e) {}
+
+      const unread = ids.filter(id => !readSet.has(id)).length;
+      const badge  = document.getElementById('notifBadge');
+      const widget = document.getElementById('notifWidget');
+      if (unread > 0) {
+        badge.textContent   = unread > 99 ? '99+' : String(unread);
+        badge.style.display = 'block';
+        widget.classList.remove('no-unread');
+      } else {
+        badge.style.display = 'none';
+        widget.classList.add('no-unread');
+      }
+    }
+
+    function handleLogout() { sessionClear(); window.location.href = 'login.html'; }
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+  </script>
+</body>
+</html>

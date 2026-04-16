@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sit-in Records — CCS Admin</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body class="admin-body">
+
+  <nav class="navbar admin-navbar">
+    <div class="admin-nav-brand">
+      <img src="CCS.png" alt="CCS" class="admin-logo" onerror="this.style.display='none'" />
+      <span class="admin-brand">College of Computer Studies Admin</span>
+    </div>
+    <ul class="nav-links admin-nav" id="navLinks">
+      <li><a href="admin_dashboard.html">Home</a></li>
+      <li><a href="#" onclick="openModal('searchModal');return false;">Search</a></li>
+      <li><a href="admin_students.html">Students</a></li>
+      <li><a href="admin_sitin.html">Sit-in</a></li>
+      <li><a href="admin_sitin_records.html" class="active">View Sit-in Records</a></li>
+      <li><a href="admin_reports.html">Sit-in Reports</a></li>
+      <li><a href="admin_feedback.html">Feedback Reports</a></li>
+      <li><a href="admin_reservation.html">Reservation</a></li>
+      <li><a href="admin_leaderboard.html">Leaderboard</a></li>
+      <li><a href="admin_analytics.html">Analytics</a></li>
+      <li><a href="admin_rewards.html">Add Reward/Points</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="adminLogout();return false;">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="admin-main">
+    <h2 class="admin-page-title">Current Sit-in Records</h2>
+
+    <!-- Charts Row -->
+    <div style="display:flex;gap:1.5rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+      <div class="admin-card" style="flex:1;min-width:280px;">
+        <div class="admin-card-body" style="padding:1rem;">
+          <canvas id="langChart" height="160"></canvas>
+        </div>
+      </div>
+      <div class="admin-card" style="flex:1;min-width:280px;">
+        <div class="admin-card-body" style="padding:1rem;">
+          <canvas id="labChart" height="160"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display:flex;gap:0.8rem;margin-bottom:1rem;justify-content:flex-end;">
+      <button class="admin-btn-blue" onclick="openModal('resetModal')"
+        style="display:flex;align-items:center;gap:0.4rem;">
+        &#x1F504; Reset Sessions
+      </button>
+      <button class="admin-btn-red" onclick="openModal('clearModal')"
+        style="display:flex;align-items:center;gap:0.4rem;">
+        &#x1F5D1; Clear All Records
+      </button>
+    </div>
+
+    <div class="admin-table-toolbar">
+      <div style="font-size:0.88rem;">
+        <select class="form-input form-select" style="width:65px;display:inline-block;padding:0.28rem 0.5rem;">
+          <option>10</option>
+          <option>25</option>
+          <option>50</option>
+        </select> entries per page
+      </div>
+      <div class="table-search-wrap">
+        Search: <input type="text" class="table-search-input" id="tblSearch" oninput="filterTable()" />
+      </div>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Sit-in Number &#8597;</th>
+            <th>ID Number &#8597;</th>
+            <th>Name &#8597;</th>
+            <th>Purpose &#8597;</th>
+            <th>Lab &#8597;</th>
+            <th>Login &#8597;</th>
+            <th>Logout &#8597;</th>
+            <th>Date &#8597;</th>
+          </tr>
+        </thead>
+        <tbody id="recBody">
+          <tr>
+            <td colspan="8" class="no-data">No data available</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-info" id="tblInfo">Showing 0 entries</div>
+
+    <div class="pagination-row">
+      <button class="page-btn">&#171;</button><button class="page-btn">&#8249;</button>
+      <button class="page-btn active-page">1</button>
+      <button class="page-btn">&#8250;</button><button class="page-btn">&#187;</button>
+    </div>
+  </div>
+
+  <!-- Search Modal -->
+  <div class="modal-overlay" id="searchModal">
+    <div class="modal-box search-modal-box">
+      <div class="modal-header-row">
+        <h3 class="modal-inner-title">Search Student</h3>
+        <button class="modal-close-x" onclick="closeModal('searchModal')">&#x2715;</button>
+      </div>
+      <input type="text" class="form-input" id="searchInput" placeholder="Search..." oninput="doSearch()" />
+      <hr class="admin-hr" style="margin:0.9rem 0 0.7rem;" />
+      <div style="text-align:right;"><button class="admin-btn-blue" onclick="doSearch()">Search</button></div>
+      <div id="searchResults" style="margin-top:0.8rem;"></div>
+    </div>
+  </div>
+
+  <!-- Reset Sessions Confirm Modal -->
+  <div class="modal-overlay" id="resetModal">
+    <div class="modal-box" style="max-width:400px;text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:0.5rem;">&#x1F504;</div>
+      <h3 style="margin-bottom:0.5rem;color:#1e3a6e;">Reset All Sessions?</h3>
+      <p style="font-size:0.9rem;color:#555;margin-bottom:1.2rem;">
+        This will reset every student's remaining sessions back to <strong>30</strong>.
+        This cannot be undone.
+      </p>
+      <div style="display:flex;gap:0.8rem;justify-content:center;">
+        <button class="admin-btn-gray" onclick="closeModal('resetModal')">Cancel</button>
+        <button class="admin-btn-blue" onclick="resetSessions()">Yes, Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clear Records Confirm Modal -->
+  <div class="modal-overlay" id="clearModal">
+    <div class="modal-box" style="max-width:400px;text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:0.5rem;">&#x26A0;&#xFE0F;</div>
+      <h3 style="margin-bottom:0.5rem;color:#b91c1c;">Clear All Records?</h3>
+      <p style="font-size:0.9rem;color:#555;margin-bottom:1.2rem;">
+        This will <strong>permanently delete</strong> all sit-in records from the database.
+        This action <strong>cannot be undone</strong>.
+      </p>
+      <div style="display:flex;gap:0.8rem;justify-content:center;">
+        <button class="admin-btn-gray" onclick="closeModal('clearModal')">Cancel</button>
+        <button class="admin-btn-red" onclick="clearAllRecords()">Yes, Delete All</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    requireAdmin();
+    initDB().then(() => {
+      renderRecords();
+      buildCharts();
+    });
+
+    function resetSessions() {
+      closeModal('resetModal');
+      dbResetAllSessions();
+      showToast('All sessions have been reset to 30.', 'success');
+    }
+
+    function clearAllRecords() {
+      closeModal('clearModal');
+      db.run('DELETE FROM sit_in');
+      saveDB();
+      renderRecords();
+      // Rebuild charts to reflect empty state
+      Chart.getChart('langChart')?.destroy();
+      Chart.getChart('labChart')?.destroy();
+      buildCharts();
+      showToast('All sit-in records have been cleared.', 'success');
+    }
+
+    function fmtDateTime(dt) {
+      if (!dt) return '—';
+      try {
+        const d = new Date(dt.replace(' ', 'T') + (dt.includes('T') ? '' : 'Z'));
+        return isNaN(d) ? dt : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } catch (e) { return dt; }
+    }
+
+    function fmtDate(dt) {
+      if (!dt) return '—';
+      try {
+        const d = new Date(dt.replace(' ', 'T') + (dt.includes('T') ? '' : 'Z'));
+        return isNaN(d) ? dt : d.toLocaleDateString();
+      } catch (e) { return dt; }
+    }
+
+    function renderRecords() {
+      const rows = dbGetAllSitins();
+      const tbody = document.getElementById('recBody');
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="no-data">No data available</td></tr>';
+        document.getElementById('tblInfo').textContent = 'Showing 0 entries';
+        return;
+      }
+      document.getElementById('tblInfo').textContent = `Showing ${rows.length} entr${rows.length === 1 ? 'y' : 'ies'}`;
+      tbody.innerHTML = rows.map((r, i) => `
+        <tr class="${i % 2 === 0 ? 'row-even' : 'row-odd'}">
+          <td>${r.id}</td>
+          <td>${r.id_number}</td>
+          <td>${r.name}</td>
+          <td>${r.purpose}</td>
+          <td>${r.lab}</td>
+          <td>${fmtDateTime(r.time_in)}</td>
+          <td>${r.time_out ? fmtDateTime(r.time_out) : '<span style="color:#f59e0b;font-size:0.8rem;">Active</span>'}</td>
+          <td>${fmtDate(r.time_in)}</td>
+        </tr>`).join('');
+    }
+
+    function buildCharts() {
+      // Language chart
+      const langData = dbGetSitinsByPurpose();
+      const langLabels = langData.length ? langData.map(d => d.purpose) : ['No Data'];
+      const langCounts = langData.length ? langData.map(d => d.count) : [0];
+      const langColors = ['#3b82f6', '#ef4444', '#f59e0b', '#22c55e', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899'];
+
+      new Chart(document.getElementById('langChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: langLabels,
+          datasets: [{ data: langCounts, backgroundColor: langColors.slice(0, langLabels.length), borderRadius: 4 }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: 'Sit-ins by Programming Language', font: { size: 12 } }
+          },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+
+      // Lab chart
+      const labR = db.exec(`SELECT lab, COUNT(*) as cnt FROM sit_in GROUP BY lab ORDER BY cnt DESC`);
+      const labLabels = labR.length && labR[0].values.length ? labR[0].values.map(r => 'Room ' + r[0]) : ['No Data'];
+      const labCounts = labR.length && labR[0].values.length ? labR[0].values.map(r => r[1]) : [0];
+      const labColors = ['#f472b6', '#fb923c', '#a78bfa', '#34d399', '#60a5fa', '#fbbf24'];
+
+      new Chart(document.getElementById('labChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: labLabels,
+          datasets: [{ data: labCounts, backgroundColor: labColors.slice(0, labLabels.length), borderRadius: 4 }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: 'Sit-ins by Lab Room', font: { size: 12 } }
+          },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+    }
+
+    function filterTable() {
+      const q = document.getElementById('tblSearch').value.toLowerCase();
+      document.querySelectorAll('#recBody tr').forEach(r => {
+        r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    }
+
+    function doSearch() {
+      const q = val('searchInput');
+      if (!q) { document.getElementById('searchResults').innerHTML = ''; return; }
+      const r = db.exec(
+        `SELECT id_number,firstname,lastname FROM students WHERE id_number LIKE ? OR firstname LIKE ? OR lastname LIKE ?`,
+        [`%${q}%`, `%${q}%`, `%${q}%`]
+      );
+      const el = document.getElementById('searchResults');
+      if (!r.length || !r[0].values.length) { el.innerHTML = '<p style="color:#888;font-size:0.88rem;">No students found.</p>'; return; }
+      el.innerHTML = r[0].values.map(row =>
+        `<div class="search-result-row"><strong>${row[0]}</strong> — ${row[1]} ${row[2]}</div>`
+      ).join('');
+    }
+  </script>
+</body>
+
+</html>

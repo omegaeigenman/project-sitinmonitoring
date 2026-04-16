@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sit-in Reports — CCS Admin</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="admin.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    .reports-toolbar { display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; margin-bottom:1rem; }
+    .export-btn { padding:0.28rem 0.7rem; font-size:0.82rem; border:1px solid #bbb; border-radius:4px; background:#f4f6fb; cursor:pointer; font-family:inherit; }
+    .export-btn:hover { background:#e2e8f0; }
+    .filter-wrap { margin-left:auto; display:flex; align-items:center; gap:0.5rem; font-size:0.88rem; }
+    .filter-wrap input { padding:0.28rem 0.6rem; border:1px solid #ccc; border-radius:4px; font-size:0.85rem; width:180px; }
+    .date-input { padding:0.28rem 0.6rem; border:1px solid #ccc; border-radius:4px; font-size:0.85rem; font-family:inherit; }
+    .page-info { font-size:0.82rem; color:#555; margin:0.5rem 0; }
+  </style>
+</head>
+<body class="admin-body">
+
+  <nav class="navbar admin-navbar">
+    <div class="admin-nav-brand">
+      <img src="CCS.png" alt="CCS" class="admin-logo" onerror="this.style.display='none'"/>
+      <span class="admin-brand">College of Computer Studies Admin</span>
+    </div>
+    <ul class="nav-links admin-nav" id="navLinks">
+      <li><a href="admin_dashboard.html">Home</a></li>
+      <li><a href="#" onclick="openModal('searchModal');return false;">Search</a></li>
+      <li><a href="admin_students.html">Students</a></li>
+      <li><a href="admin_sitin.html">Sit-in</a></li>
+      <li><a href="admin_sitin_records.html">View Sit-in Records</a></li>
+      <li><a href="admin_reports.html" class="active">Sit-in Reports</a></li>
+      <li><a href="admin_feedback.html">Feedback Reports</a></li>
+      <li><a href="admin_reservation.html">Reservation</a></li>
+      <li><a href="admin_leaderboard.html">Leaderboard</a></li>
+      <li><a href="admin_analytics.html">Analytics</a></li>
+      <li><a href="admin_rewards.html">Add Reward/Points</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="adminLogout();return false;">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="admin-main">
+    <h2 class="admin-page-title">Generate Reports</h2>
+
+    <!-- Date Filter + Export Row -->
+    <div class="reports-toolbar">
+      <input type="date" id="dateFilter" class="date-input"/>
+      <button class="admin-btn-blue" style="padding:0.28rem 0.9rem;font-size:0.85rem;" onclick="applyDateFilter()">Search</button>
+      <button class="admin-btn-red"  style="padding:0.28rem 0.9rem;font-size:0.85rem;" onclick="resetFilter()">Reset</button>
+    </div>
+    <div class="reports-toolbar" style="margin-bottom:0.8rem;">
+      <button class="export-btn" onclick="exportCSV()">CSV</button>
+      <button class="export-btn" onclick="exportExcel()">Excel</button>
+      <button class="export-btn" onclick="window.print()">PDF</button>
+      <button class="export-btn" onclick="window.print()">Print</button>
+      <div class="filter-wrap">
+        Filter: <input type="text" id="liveFilter" oninput="liveFilterTable()" placeholder="Filter..."/>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="admin-table-wrap">
+      <table class="admin-table" id="reportTable">
+        <thead>
+          <tr>
+            <th>ID Number &#8597;</th>
+            <th>Name &#8597;</th>
+            <th>Purpose &#8597;</th>
+            <th>Laboratory &#8597;</th>
+            <th>Login &#8597;</th>
+            <th>Logout &#8597;</th>
+            <th>Date &#8597;</th>
+          </tr>
+        </thead>
+        <tbody id="reportBody">
+          <tr><td colspan="7" class="no-data">No records yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="page-info" id="pageInfo">Showing 0 entries</div>
+    <div class="pagination-row">
+      <button class="page-btn" onclick="changePage(-1)">&#171;</button>
+      <button class="page-btn" onclick="changePage(-1)">&#8249;</button>
+      <span id="pageNum" class="page-btn active-page">1</span>
+      <button class="page-btn" onclick="changePage(1)">&#8250;</button>
+      <button class="page-btn" onclick="changePage(1)">&#187;</button>
+    </div>
+  </div>
+
+  <!-- Search Modal -->
+  <div class="modal-overlay" id="searchModal">
+    <div class="modal-box search-modal-box">
+      <div class="modal-header-row">
+        <h3 class="modal-inner-title">Search Student</h3>
+        <button class="modal-close-x" onclick="closeModal('searchModal')">&#x2715;</button>
+      </div>
+      <input type="text" class="form-input" id="searchInput" placeholder="Search..." oninput="doSearch()"/>
+      <hr class="admin-hr" style="margin:0.9rem 0 0.7rem;"/>
+      <div style="text-align:right;"><button class="admin-btn-blue" onclick="doSearch()">Search</button></div>
+      <div id="searchResults" style="margin-top:0.8rem;"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    requireAdmin();
+
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
+    let allRows = [];
+
+    initDB().then(() => { loadReport(); });
+
+    function fmtTime(dt) {
+      if (!dt) return '—';
+      try {
+        const d = new Date(dt.replace(' ','T') + (dt.includes('T') ? '' : 'Z'));
+        return isNaN(d) ? dt : d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+      } catch(e) { return dt; }
+    }
+    function fmtDate(dt) {
+      if (!dt) return '—';
+      try {
+        const d = new Date(dt.replace(' ','T') + (dt.includes('T') ? '' : 'Z'));
+        return isNaN(d) ? dt : d.toISOString().slice(0,10);
+      } catch(e) { return dt; }
+    }
+
+    function loadReport(dateVal) {
+      let sql = 'SELECT * FROM sit_in';
+      let params = [];
+      if (dateVal) {
+        sql += " WHERE date(time_in) = ?";
+        params = [dateVal];
+      }
+      sql += ' ORDER BY id DESC';
+      const r = db.exec(sql, params);
+      allRows = (r.length && r[0].values.length)
+        ? r[0].values.map((_,i) => rowToObj(r[0], i))
+        : [];
+      currentPage = 1;
+      renderPage();
+    }
+
+    function renderPage() {
+      const q = document.getElementById('liveFilter').value.toLowerCase();
+      const filtered = q ? allRows.filter(r =>
+        (r.id_number+r.name+r.purpose+r.lab).toLowerCase().includes(q)
+      ) : allRows;
+
+      const total = filtered.length;
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const pageRows = filtered.slice(start, start + PAGE_SIZE);
+      const end = Math.min(start + PAGE_SIZE, total);
+
+      document.getElementById('pageInfo').textContent =
+        total ? `Showing ${start+1} to ${end} of ${total} entries` : 'Showing 0 entries';
+      document.getElementById('pageNum').textContent = currentPage;
+
+      const tbody = document.getElementById('reportBody');
+      if (!pageRows.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="no-data">No records found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = pageRows.map((r,i) => `
+        <tr class="${i%2===0?'row-even':'row-odd'}">
+          <td>${r.id_number}</td>
+          <td>${r.name}</td>
+          <td>${r.purpose}</td>
+          <td>${r.lab}</td>
+          <td>${fmtTime(r.time_in)}</td>
+          <td>${r.time_out ? fmtTime(r.time_out) : '—'}</td>
+          <td>${fmtDate(r.time_in)}</td>
+        </tr>`).join('');
+    }
+
+    function applyDateFilter() {
+      const d = document.getElementById('dateFilter').value;
+      loadReport(d || null);
+    }
+    function resetFilter() {
+      document.getElementById('dateFilter').value = '';
+      document.getElementById('liveFilter').value = '';
+      loadReport();
+    }
+    function liveFilterTable() { currentPage = 1; renderPage(); }
+    function changePage(dir) {
+      const q = document.getElementById('liveFilter').value.toLowerCase();
+      const filtered = q ? allRows.filter(r =>
+        (r.id_number+r.name+r.purpose+r.lab).toLowerCase().includes(q)) : allRows;
+      const maxPage = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+      currentPage = Math.min(Math.max(1, currentPage + dir), maxPage);
+      renderPage();
+    }
+
+    function exportCSV() {
+      const headers = ['ID Number','Name','Purpose','Laboratory','Login','Logout','Date'];
+      const lines = [headers.join(',')];
+      allRows.forEach(r => lines.push([
+        r.id_number, r.name, r.purpose, r.lab,
+        fmtTime(r.time_in), r.time_out ? fmtTime(r.time_out) : '',
+        fmtDate(r.time_in)
+      ].map(v => `"${v}"`).join(',')));
+      const blob = new Blob([lines.join('\n')], { type:'text/csv' });
+      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download:'sitin_report.csv' });
+      a.click();
+    }
+    function exportExcel() {
+      // Simple HTML table export that Excel opens
+      const rows = allRows.map(r => `<tr><td>${r.id_number}</td><td>${r.name}</td><td>${r.purpose}</td><td>${r.lab}</td><td>${fmtTime(r.time_in)}</td><td>${r.time_out ? fmtTime(r.time_out) : ''}</td><td>${fmtDate(r.time_in)}</td></tr>`).join('');
+      const html = `<table><tr><th>ID Number</th><th>Name</th><th>Purpose</th><th>Laboratory</th><th>Login</th><th>Logout</th><th>Date</th></tr>${rows}</table>`;
+      const blob = new Blob([html], { type:'application/vnd.ms-excel' });
+      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download:'sitin_report.xls' });
+      a.click();
+    }
+
+    function doSearch() {
+      const q = val('searchInput');
+      if (!q) { document.getElementById('searchResults').innerHTML=''; return; }
+      const r = db.exec(
+        `SELECT id_number,firstname,lastname FROM students WHERE id_number LIKE ? OR firstname LIKE ? OR lastname LIKE ?`,
+        [`%${q}%`,`%${q}%`,`%${q}%`]
+      );
+      const el = document.getElementById('searchResults');
+      if (!r.length||!r[0].values.length) { el.innerHTML='<p style="color:#888;font-size:0.88rem;">No students found.</p>'; return; }
+      el.innerHTML = r[0].values.map(row =>
+        `<div class="search-result-row"><strong>${row[0]}</strong> — ${row[1]} ${row[2]}</div>`).join('');
+    }
+  </script>
+</body>
+</html>

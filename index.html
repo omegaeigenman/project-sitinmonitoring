@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CCS Sit-in Monitoring System</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">
+      <img src="CCS.png" alt="CCS Logo" class="nav-logo" />
+      <span class="nav-title">College of Computer Studies Sit-in Monitoring System</span>
+    </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle">Community <span class="caret">▾</span></a>
+        <ul class="dropdown-menu">
+          <li><a href="#">Forums</a></li>
+          <li><a href="#">Announcements</a></li>
+          <li><a href="#">Events</a></li>
+        </ul>
+      </li>
+      <li><a href="#">About</a></li>
+      <li><a href="login.html">Login</a></li>
+      <li><a href="register.html">Register</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="announcement-box">
+      <div class="announcement-header">Announcement</div>
+      <div class="announcement-body">
+        <div class="ann-item">
+          <div class="ann-meta">CCS Admin | 2026-Feb-11</div>
+          <div class="ann-content empty"></div>
+        </div>
+        <div class="ann-item">
+          <div class="ann-meta">CCS Admin | 2024-May-08</div>
+          <div class="ann-content">
+            Important Announcement — We are excited to announce the launch of our new website! 🎉 Explore our latest
+            products and services now!
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

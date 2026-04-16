@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reserve a Computer — CCS</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body { background: #f4f6fb; }
+
+    .res-wrap {
+      max-width: 540px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .res-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46,64,153,0.09);
+      overflow: hidden;
+    }
+
+    .res-card-header {
+      background: #1e3a6e;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 0.85rem 1.2rem;
+      text-align: center;
+    }
+
+    .res-card-body { padding: 1.3rem 1.4rem; }
+
+    .field-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    @media (max-width: 480px) { .field-group { grid-template-columns: 1fr; } }
+
+    .field-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 0.3rem;
+    }
+
+    .field-input {
+      width: 100%;
+      border: 1.5px solid #d0d4e8;
+      border-radius: 6px;
+      padding: 0.48rem 0.75rem;
+      font-family: inherit;
+      font-size: 0.88rem;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color .15s;
+    }
+    .field-input:focus { border-color: #1e3a6e; }
+
+    .full { grid-column: 1 / -1; }
+
+    .submit-btn {
+      width: 100%;
+      background: #1e3a6e;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.58rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 0.4rem;
+      transition: background .15s;
+    }
+    .submit-btn:hover { background: #2547a0; }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.88rem;
+      color: #2547a0;
+      text-decoration: none;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    /* History list */
+    .history-section { margin-top: 1.8rem; }
+    .history-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 0.7rem;
+    }
+    .history-item {
+      background: #fff;
+      border: 1px solid #dde3f0;
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      margin-bottom: 0.6rem;
+      font-size: 0.86rem;
+      color: #333;
+    }
+    .history-item .h-field { margin-bottom: 0.15rem; }
+    .history-item .h-field strong { color: #1e3a6e; }
+    .status-pending  { color: #f59e0b; font-weight: 600; }
+    .status-accepted { color: #22c55e; font-weight: 600; }
+    .status-denied   { color: #ef4444; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar dash-navbar">
+    <span class="dash-brand">&#127979; CCS Dashboard</span>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="dashboard.html">Home</a></li>
+      <li><a href="student_session.html">My Sessions</a></li>
+      <li><a href="student_history.html">History &amp; Feedback</a></li>
+      <li><a href="student_reservation.html" class="active">Reservation</a></li>
+      <li><a href="student_notifications.html">Notifications</a></li>
+      <li><a href="edit_profile.html">Edit Profile</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="handleLogout()">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="res-wrap">
+    <div class="res-card">
+      <div class="res-card-header">&#128197; Reserve a Computer</div>
+      <div class="res-card-body">
+        <div class="field-group">
+          <div>
+            <div class="field-label">Lab Room</div>
+            <select class="field-input" id="rLab">
+              <option value="" disabled selected>Select lab</option>
+              <option value="524">Room 524</option>
+              <option value="526">Room 526</option>
+              <option value="530">Room 530</option>
+              <option value="542">Room 542</option>
+              <option value="544">Room 544</option>
+            </select>
+          </div>
+          <div>
+            <div class="field-label">Computer Number</div>
+            <input class="field-input" type="number" id="rComputer" min="1" max="50" placeholder="e.g. 5"/>
+          </div>
+          <div>
+            <div class="field-label">Date</div>
+            <input class="field-input" type="date" id="rDate"/>
+          </div>
+          <div>
+            <div class="field-label">Time</div>
+            <input class="field-input" type="time" id="rTime"/>
+          </div>
+          <div class="full">
+            <div class="field-label">Purpose</div>
+            <select class="field-input" id="rPurpose">
+              <option value="" disabled selected>Select purpose</option>
+            </select>
+          </div>
+        </div>
+        <button class="submit-btn" onclick="submitReservation()">Submit Reservation</button>
+      </div>
+    </div>
+
+    <div class="history-section">
+      <div class="history-title">My Reservations</div>
+      <div id="myReservations"><p style="color:#aaa;font-size:0.88rem;">Loading...</p></div>
+    </div>
+
+    <a href="dashboard.html" class="back-link">&#8592; Back to Dashboard</a>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    let currentStudent = null;
+
+    async function init() {
+      const sess = sessionGet();
+      if (!sess) { window.location.href = 'login.html'; return; }
+      await initDB();
+      currentStudent = dbGetStudent(sess.id_number);
+      if (!currentStudent) { sessionClear(); window.location.href = 'login.html'; return; }
+
+      // Populate purpose dropdown
+      const sel = document.getElementById('rPurpose');
+      PROG_LANGUAGES.forEach(lang => {
+        const o = document.createElement('option');
+        o.value = o.textContent = lang;
+        sel.appendChild(o);
+      });
+
+      // Ensure reservations table exists
+      db.run(`CREATE TABLE IF NOT EXISTS reservations (
+        id           INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_number    TEXT NOT NULL,
+        lab          TEXT NOT NULL,
+        computer_num INTEGER NOT NULL,
+        purpose      TEXT NOT NULL,
+        res_date     TEXT NOT NULL,
+        res_time     TEXT NOT NULL,
+        status       TEXT DEFAULT 'Pending',
+        created_at   TEXT DEFAULT (datetime('now'))
+      )`);
+      saveDB();
+
+      // Set default date to today
+      const today = new Date();
+      document.getElementById('rDate').value = today.toISOString().split('T')[0];
+
+      loadMyReservations();
+    }
+
+    function submitReservation() {
+      const lab         = document.getElementById('rLab').value;
+      const computer    = document.getElementById('rComputer').value.trim();
+      const date        = document.getElementById('rDate').value;
+      const time        = document.getElementById('rTime').value;
+      const purpose     = document.getElementById('rPurpose').value;
+
+      if (!lab)      { showToast('Please select a lab room.', 'error'); return; }
+      if (!computer) { showToast('Please enter a computer number.', 'error'); return; }
+      if (!date)     { showToast('Please pick a date.', 'error'); return; }
+      if (!time)     { showToast('Please pick a time.', 'error'); return; }
+      if (!purpose)  { showToast('Please select a purpose.', 'error'); return; }
+
+      db.run(
+        `INSERT INTO reservations (id_number, lab, computer_num, purpose, res_date, res_time)
+         VALUES (?,?,?,?,?,?)`,
+        [currentStudent.id_number, lab, parseInt(computer), purpose, date, time]
+      );
+      saveDB();
+      showToast('Reservation submitted!', 'success');
+
+      // Reset
+      document.getElementById('rLab').selectedIndex      = 0;
+      document.getElementById('rComputer').value         = '';
+      document.getElementById('rPurpose').selectedIndex  = 0;
+      document.getElementById('rTime').value             = '';
+
+      loadMyReservations();
+    }
+
+    function loadMyReservations() {
+      const r = db.exec(
+        `SELECT id_number, lab, computer_num, purpose, res_date, res_time, status
+         FROM reservations WHERE id_number=? ORDER BY rowid DESC`,
+        [currentStudent.id_number]
+      );
+      const container = document.getElementById('myReservations');
+      if (!r.length || !r[0].values.length) {
+        container.innerHTML = '<p style="color:#aaa;font-size:0.88rem;">No reservations yet.</p>';
+        return;
+      }
+      container.innerHTML = r[0].values.map(row => `
+        <div class="history-item">
+          <div class="h-field"><strong>Lab:</strong> ${row[1]} &nbsp;|&nbsp; <strong>Computer #${row[2]}</strong></div>
+          <div class="h-field"><strong>Purpose:</strong> ${row[3]}</div>
+          <div class="h-field"><strong>Date:</strong> ${row[4]} &nbsp; <strong>Time:</strong> ${row[5]}</div>
+          <div class="h-field"><strong>Status:</strong>
+            <span class="status-${(row[6]||'pending').toLowerCase()}">${row[6] || 'Pending'}</span>
+          </div>
+        </div>`).join('');
+    }
+
+    function handleLogout() { sessionClear(); window.location.href = 'login.html'; }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

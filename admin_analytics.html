@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Analytics — CCS Admin</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="admin.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.1rem;
+      margin-bottom: 1.4rem;
+    }
+    @media (max-width: 800px) { .analytics-grid { grid-template-columns: 1fr; } }
+
+    .chart-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46,64,153,.08);
+      overflow: hidden;
+    }
+    .chart-card-head {
+      background: linear-gradient(90deg,#1e3a6e 0%,#2547a0 100%);
+      color: #fff; padding: .68rem 1.1rem;
+      font-weight: 700; font-size: .92rem;
+      display: flex; align-items: center; gap: .45rem;
+    }
+    .chart-card-body { padding: 1rem; }
+
+    /* stat tiles */
+    .stat-tiles {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: .9rem;
+      margin-bottom: 1.4rem;
+    }
+    @media (max-width: 700px) { .stat-tiles { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 400px) { .stat-tiles { grid-template-columns: 1fr; } }
+
+    .stat-tile {
+      border-radius: 12px;
+      padding: 1rem;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,.14);
+      display: flex; flex-direction: column; gap: .3rem;
+    }
+    .stat-tile-icon { font-size: 1.5rem; }
+    .stat-tile-val  { font-size: 2rem; font-weight: 800; line-height: 1; }
+    .stat-tile-lbl  { font-size: .76rem; opacity: .82; }
+
+    /* purpose table */
+    .purpose-wrap {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46,64,153,.08);
+      overflow: hidden;
+      margin-bottom: 1.4rem;
+    }
+    .purpose-head {
+      background: linear-gradient(90deg,#7c3aed,#a855f7);
+      color: #fff; padding: .68rem 1.1rem;
+      font-weight: 700; font-size: .92rem;
+    }
+    .purpose-table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+    .purpose-table th {
+      padding: .55rem .85rem; text-align: left; font-size: .76rem;
+      font-weight: 600; color: #374151; background: #f4f6fb;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .purpose-table td {
+      padding: .5rem .85rem; border-bottom: 1px solid #f0f2f8; color: #374151;
+    }
+    .purpose-table tr:last-child td { border-bottom: none; }
+    .purpose-table tr:hover td     { background: #f8faff; }
+    .bar-mini {
+      height: 8px; border-radius: 4px;
+      background: linear-gradient(90deg,#7c3aed,#a855f7);
+      min-width: 4px;
+    }
+    .range-select {
+      padding: .32rem .65rem; border: 1.5px solid #d0d4e8;
+      border-radius: 7px; font-family: inherit; font-size: .82rem;
+      outline: none; cursor: pointer; margin-left: auto;
+    }
+  </style>
+</head>
+<body class="admin-body">
+  <nav class="navbar admin-navbar">
+    <div class="admin-nav-brand">
+      <img src="CCS.png" alt="CCS" class="admin-logo" onerror="this.style.display='none'"/>
+      <span class="admin-brand">College of Computer Studies Admin</span>
+    </div>
+    <ul class="nav-links admin-nav" id="navLinks">
+      <li><a href="admin_dashboard.html">Home</a></li>
+      <li><a href="#" onclick="openModal('searchModal');return false;">Search</a></li>
+      <li><a href="admin_students.html">Students</a></li>
+      <li><a href="admin_sitin.html">Sit-in</a></li>
+      <li><a href="admin_sitin_records.html">View Sit-in Records</a></li>
+      <li><a href="admin_reports.html">Sit-in Reports</a></li>
+      <li><a href="admin_feedback.html">Feedback Reports</a></li>
+      <li><a href="admin_reservation.html">Reservation</a></li>
+      <li><a href="admin_leaderboard.html">Leaderboard</a></li>
+      <li><a href="admin_analytics.html" class="active">Analytics</a></li>
+      <li><a href="admin_rewards.html">Add Reward/Points</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="adminLogout();return false;">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="admin-main">
+
+    <!-- Stat tiles -->
+    <div class="stat-tiles">
+      <div class="stat-tile" style="background:linear-gradient(135deg,#1e3a6e,#2547a0);">
+        <div class="stat-tile-icon">&#128101;</div>
+        <div class="stat-tile-val" id="tileReg">0</div>
+        <div class="stat-tile-lbl">Students Registered</div>
+      </div>
+      <div class="stat-tile" style="background:linear-gradient(135deg,#059669,#10b981);">
+        <div class="stat-tile-icon">&#127970;</div>
+        <div class="stat-tile-val" id="tileCur">0</div>
+        <div class="stat-tile-lbl">Currently Sit-in</div>
+      </div>
+      <div class="stat-tile" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">
+        <div class="stat-tile-icon">&#128203;</div>
+        <div class="stat-tile-val" id="tileTot">0</div>
+        <div class="stat-tile-lbl">Total Sit-in Records</div>
+      </div>
+      <div class="stat-tile" style="background:linear-gradient(135deg,#f59e0b,#f97316);">
+        <div class="stat-tile-icon">&#127941;</div>
+        <div class="stat-tile-val" id="tilePts">0</div>
+        <div class="stat-tile-lbl">Total Points Awarded</div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="analytics-grid">
+      <div class="chart-card">
+        <div class="chart-card-head" style="justify-content:space-between;">
+          <span>&#128336; Sit-ins by Day</span>
+          <select class="range-select" id="dayRange" onchange="buildBar()">
+            <option value="7">Last 7 days</option>
+            <option value="14">Last 14 days</option>
+            <option value="30">Last 30 days</option>
+          </select>
+        </div>
+        <div class="chart-card-body"><canvas id="barChart" height="200"></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-card-head">&#128200; 30-Day Trend</div>
+        <div class="chart-card-body"><canvas id="lineChart" height="200"></canvas></div>
+      </div>
+    </div>
+
+    <div class="analytics-grid">
+      <div class="chart-card">
+        <div class="chart-card-head">&#128202; Sit-ins by Purpose</div>
+        <div class="chart-card-body"><canvas id="pieChart" height="220"></canvas></div>
+      </div>
+
+      <!-- Top purpose table -->
+      <div class="purpose-wrap" style="margin-bottom:0;">
+        <div class="purpose-head">&#127941; Top Programming Languages</div>
+        <div style="padding:.5rem;">
+          <table class="purpose-table">
+            <thead><tr><th>Language</th><th>Count</th><th>Share</th><th style="width:120px;">Bar</th></tr></thead>
+            <tbody id="purposeBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    requireAdmin();
+    let barChart = null, lineChart = null, pieChart = null;
+
+    initDB().then(() => {
+      dbEnsurePointsTable();
+      loadTiles();
+      buildBar();
+      buildLine();
+      buildPie();
+      buildPurposeTable();
+    });
+
+    function loadTiles() {
+      document.getElementById('tileReg').textContent = dbCountStudents();
+      document.getElementById('tileCur').textContent = dbCountActiveSitins();
+      document.getElementById('tileTot').textContent = dbCountTotalSitins();
+      // Total points
+      try {
+        const r = db.exec('SELECT COALESCE(SUM(points),0) FROM student_points');
+        document.getElementById('tilePts').textContent = r.length ? (r[0].values[0][0] || 0) : 0;
+      } catch(e) { document.getElementById('tilePts').textContent = 0; }
+    }
+
+    function buildBar() {
+      const days = parseInt(document.getElementById('dayRange').value);
+      const rows = dbGetSitinsPerDay(days);
+      const ctx  = document.getElementById('barChart').getContext('2d');
+      if (barChart) barChart.destroy();
+      barChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: rows.map(r => r.label),
+          datasets: [{ label: 'Sit-ins', data: rows.map(r => r.count),
+            backgroundColor: 'rgba(37,71,160,.75)', borderRadius: 5, borderSkipped: false }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision:0, font:{size:11} }, grid: { color:'#eef0f7' } },
+            x: { ticks: { font:{size:11} }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function buildLine() {
+      const rows = dbGetSitinsPerDay(30);
+      const ctx  = document.getElementById('lineChart').getContext('2d');
+      if (lineChart) lineChart.destroy();
+      lineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: rows.map(r => r.label),
+          datasets: [{ label: 'Sit-ins', data: rows.map(r => r.count),
+            borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,.12)',
+            pointBackgroundColor: '#7c3aed', pointRadius: 3, tension: .4, fill: true }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks:{precision:0,font:{size:10}}, grid:{color:'#eef0f7'} },
+            x: { ticks:{maxTicksLimit:10,font:{size:10}}, grid:{display:false} }
+          }
+        }
+      });
+    }
+
+    function buildPie() {
+      const data = dbGetSitinsByPurpose();
+      let labels = [], counts = [];
+      if (data.length) { data.forEach(d => { labels.push(d.purpose); counts.push(d.count); }); }
+      else { labels = ['No sit-ins yet']; counts = [1]; }
+      const colors = ['#3b82f6','#ef4444','#f59e0b','#f97316','#ec4899','#06b6d4','#8b5cf6','#22c55e','#84cc16','#14b8a6'];
+      const ctx = document.getElementById('pieChart').getContext('2d');
+      if (pieChart) pieChart.destroy();
+      pieChart = new Chart(ctx, {
+        type: 'pie',
+        data: { labels, datasets: [{ data: counts, backgroundColor: colors.slice(0,labels.length), borderWidth:1 }] },
+        options: { responsive: true, plugins: {
+          legend: { position:'top', labels:{font:{size:11},boxWidth:14} }
+        }}
+      });
+    }
+
+    function buildPurposeTable() {
+      const data  = dbGetSitinsByPurpose();
+      const total = data.reduce((s,d) => s + d.count, 0);
+      const tbody = document.getElementById('purposeBody');
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1rem;color:#aaa;">No data yet.</td></tr>';
+        return;
+      }
+      const max = data[0].count;
+      tbody.innerHTML = data.slice(0,10).map(d => {
+        const pct = total ? ((d.count / total) * 100).toFixed(1) : 0;
+        const w   = max  ? ((d.count / max)   * 100).toFixed(0) : 0;
+        return `<tr>
+          <td>${d.purpose}</td>
+          <td>${d.count}</td>
+          <td>${pct}%</td>
+          <td><div class="bar-mini" style="width:${w}%;"></div></td>
+        </tr>`;
+      }).join('');
+    }
+  </script>
+</body>
+</html>

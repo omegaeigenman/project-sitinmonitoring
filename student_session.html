@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Sessions — CCS</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body { background: #eef0f5; }
+    .page-wrap { max-width: 780px; margin: 0 auto; padding: 1.4rem 1rem 2rem; }
+
+    .page-title {
+      font-size: 1.4rem; font-weight: 700; color: #1a1a2e;
+      margin-bottom: 1.2rem; display: flex; align-items: center; gap: .5rem;
+    }
+
+    /* ── Big session ring ── */
+    .session-hero {
+      background: linear-gradient(135deg, #1e2a6e 0%, #2547a0 100%);
+      border-radius: 18px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      color: #fff;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 6px 24px rgba(30,42,110,.28);
+    }
+    .session-ring-wrap {
+      position: relative;
+      width: 160px; height: 160px;
+      margin: 0 auto 1.2rem;
+    }
+    .session-ring-svg { transform: rotate(-90deg); }
+    .session-ring-bg  { fill: none; stroke: rgba(255,255,255,.2); stroke-width: 12; }
+    .session-ring-fill {
+      fill: none; stroke: #f5a800; stroke-width: 12;
+      stroke-linecap: round;
+      stroke-dasharray: 440;
+      stroke-dashoffset: 440;
+      transition: stroke-dashoffset .7s ease;
+    }
+    .session-ring-fill.warn   { stroke: #fb923c; }
+    .session-ring-fill.danger { stroke: #ef4444; }
+    .session-ring-num {
+      position: absolute;
+      inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .session-big-num { font-size: 2.6rem; font-weight: 800; line-height: 1; }
+    .session-big-lbl { font-size: .78rem; opacity: .75; margin-top: .2rem; }
+
+    .session-hero-sub { font-size: .9rem; opacity: .82; margin-bottom: .5rem; }
+    .session-hero-alert {
+      display: inline-block;
+      background: rgba(239,68,68,.22);
+      border: 1px solid rgba(239,68,68,.45);
+      border-radius: 8px;
+      padding: .4rem .9rem;
+      font-size: .84rem;
+      font-weight: 600;
+    }
+    .session-hero-ok {
+      display: inline-block;
+      background: rgba(34,197,94,.18);
+      border: 1px solid rgba(34,197,94,.4);
+      border-radius: 8px;
+      padding: .4rem .9rem;
+      font-size: .84rem;
+      font-weight: 600;
+    }
+
+    /* ── Stats row ── */
+    .session-stats {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: .85rem;
+      margin-bottom: 1.2rem;
+    }
+    @media (max-width: 500px) { .session-stats { grid-template-columns: 1fr; } }
+
+    .stat-box {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #dde3f0;
+      padding: 1rem .9rem;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(46,64,153,.07);
+    }
+    .stat-box-icon { font-size: 1.5rem; margin-bottom: .3rem; }
+    .stat-box-val  { font-size: 1.6rem; font-weight: 800; color: #1e2a6e; line-height: 1; }
+    .stat-box-lbl  { font-size: .76rem; color: #888; margin-top: .2rem; }
+
+    /* ── Points card ── */
+    .points-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #dde3f0;
+      box-shadow: 0 2px 10px rgba(46,64,153,.07);
+      overflow: hidden;
+      margin-bottom: 1.2rem;
+    }
+    .card-head {
+      background: linear-gradient(90deg, #f59e0b, #f97316);
+      color: #fff;
+      padding: .65rem 1.1rem;
+      font-weight: 700;
+      font-size: .93rem;
+    }
+    .card-body { padding: 1rem; }
+    .pts-total-row {
+      display: flex; align-items: center; gap: .8rem;
+      padding: .7rem 0; border-bottom: 1px solid #f0f2f8; margin-bottom: .7rem;
+    }
+    .pts-total-icon { font-size: 2rem; }
+    .pts-total-num  { font-size: 2rem; font-weight: 800; color: #f59e0b; }
+    .pts-total-lbl  { font-size: .78rem; color: #888; }
+
+    .pts-log-row {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .38rem .3rem;
+      border-bottom: 1px solid #f9f9fb;
+      font-size: .83rem;
+    }
+    .pts-log-row:last-child { border-bottom: none; }
+    .pts-badge {
+      background: #fef3c7; color: #92400e;
+      font-weight: 700; font-size: .74rem;
+      padding: .13rem .45rem; border-radius: 12px; white-space: nowrap;
+    }
+    .pts-reason { flex: 1; color: #374151; }
+    .pts-date   { color: #aaa; font-size: .72rem; white-space: nowrap; }
+    .pts-empty  { text-align: center; color: #aaa; padding: 1rem 0; font-size: .85rem; }
+
+    .back-link {
+      display: inline-block; text-decoration: none;
+      color: #2547a0; font-size: .88rem; margin-bottom: .8rem;
+    }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <nav class="navbar dash-navbar">
+    <span class="dash-brand">&#127979; CCS Dashboard</span>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="dashboard.html">Home</a></li>
+      <li><a href="student_session.html" class="active">My Sessions</a></li>
+      <li><a href="student_history.html">History &amp; Feedback</a></li>
+      <li><a href="student_reservation.html">Reservation</a></li>
+      <li><a href="student_notifications.html">Notifications</a></li>
+      <li><a href="edit_profile.html">Edit Profile</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="handleLogout()">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="page-wrap">
+    <a href="dashboard.html" class="back-link">&#8592; Back to Dashboard</a>
+    <div class="page-title">&#9200; My Remaining Sessions</div>
+
+    <!-- Hero ring -->
+    <div class="session-hero">
+      <div class="session-ring-wrap">
+        <svg class="session-ring-svg" width="160" height="160" viewBox="0 0 160 160">
+          <circle class="session-ring-bg"   cx="80" cy="80" r="70"/>
+          <circle class="session-ring-fill" cx="80" cy="80" r="70" id="ringFill"/>
+        </svg>
+        <div class="session-ring-num">
+          <div class="session-big-num" id="heroNum">—</div>
+          <div class="session-big-lbl">sessions left</div>
+        </div>
+      </div>
+      <div class="session-hero-sub" id="heroSub">Loading...</div>
+      <div id="heroAlert"></div>
+    </div>
+
+    <!-- Stat boxes -->
+    <div class="session-stats">
+      <div class="stat-box">
+        <div class="stat-box-icon">&#128221;</div>
+        <div class="stat-box-val" id="statTotal">—</div>
+        <div class="stat-box-lbl">Total Allocated</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-icon">&#9989;</div>
+        <div class="stat-box-val" id="statUsed">—</div>
+        <div class="stat-box-lbl">Sessions Used</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-icon">&#11088;</div>
+        <div class="stat-box-val" id="statPts">—</div>
+        <div class="stat-box-lbl">Reward Points</div>
+      </div>
+    </div>
+
+    <!-- Points log -->
+    <div class="points-card">
+      <div class="card-head">&#11088; Reward Points History</div>
+      <div class="card-body">
+        <div class="pts-total-row">
+          <div class="pts-total-icon">&#127941;</div>
+          <div>
+            <div class="pts-total-num" id="ptsTotal">0</div>
+            <div class="pts-total-lbl">Total Points Earned</div>
+          </div>
+        </div>
+        <div id="ptsLog"><div class="pts-empty">No points awarded yet.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    const MAX_SESS = 30;
+
+    async function init() {
+      const sess = sessionGet();
+      if (!sess) { window.location.href = 'login.html'; return; }
+      await initDB();
+      dbEnsurePointsTable();
+      const s = dbGetStudent(sess.id_number);
+      if (!s) { sessionClear(); window.location.href = 'login.html'; return; }
+
+      const cnt   = s.session_cnt;
+      const used  = MAX_SESS - cnt;
+      const pct   = Math.max(0, Math.min(100, (cnt / MAX_SESS) * 100));
+      const circ  = 2 * Math.PI * 70; // ~440
+
+      document.getElementById('heroNum').textContent = cnt;
+      document.getElementById('statTotal').textContent = MAX_SESS;
+      document.getElementById('statUsed').textContent  = used;
+
+      // Ring fill
+      const ring = document.getElementById('ringFill');
+      const offset = circ - (pct / 100) * circ;
+      ring.style.strokeDasharray  = circ;
+      ring.style.strokeDashoffset = circ;
+      setTimeout(() => { ring.style.strokeDashoffset = offset; }, 80);
+
+      if (pct <= 20) {
+        ring.classList.add('danger');
+        document.getElementById('heroAlert').innerHTML =
+          '<div class="session-hero-alert">&#9888;&#65039; Only ' + cnt + ' session(s) left — contact your admin!</div>';
+      } else if (pct <= 50) {
+        ring.classList.add('warn');
+        document.getElementById('heroAlert').innerHTML =
+          '<div class="session-hero-ok">Less than half remaining</div>';
+      } else {
+        document.getElementById('heroAlert').innerHTML =
+          '<div class="session-hero-ok">&#10003; Sessions in good standing</div>';
+      }
+      document.getElementById('heroSub').textContent =
+        `${pct.toFixed(0)}% remaining out of ${MAX_SESS} total allocated sessions`;
+
+      // Points
+      const pts = dbGetTotalPoints(s.id_number);
+      document.getElementById('statPts').textContent  = pts;
+      document.getElementById('ptsTotal').textContent = pts;
+
+      const log = dbGetPointsLog(s.id_number);
+      const el  = document.getElementById('ptsLog');
+      if (!log.length) return;
+      el.innerHTML = log.map(l => `
+        <div class="pts-log-row">
+          <span class="pts-badge">+${l.points}</span>
+          <span class="pts-reason">${l.reason || '—'}</span>
+          <span class="pts-date">${fmtDate(new Date(l.awarded_at || Date.now()))}</span>
+        </div>`).join('');
+    }
+
+    function handleLogout() { sessionClear(); window.location.href = 'login.html'; }
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

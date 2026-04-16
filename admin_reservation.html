@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reservation — CCS Admin</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="admin.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── Reservation grid ── */
+    .reservation-grid {
+      display: grid;
+      grid-template-columns: 220px 1fr 1fr;
+      gap: 1.1rem;
+      align-items: start;
+    }
+    @media (max-width: 1000px) {
+      .reservation-grid { grid-template-columns: 200px 1fr 1fr; }
+    }
+    @media (max-width: 780px) {
+      .reservation-grid { grid-template-columns: 1fr 1fr; }
+      .comp-control-card { grid-column: 1 / -1; }
+    }
+    @media (max-width: 520px) {
+      .reservation-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Computer Control Panel ── */
+    .comp-control-card { background: #fff; border-radius: 8px; border: 1px solid #dde3f0; overflow: hidden; }
+    .comp-control-header {
+      background: #1e3a6e;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.93rem;
+      padding: 0.65rem 1rem;
+      text-align: center;
+    }
+    .comp-control-body { background: #fff; padding: 0.9rem; }
+    .comp-field-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.65rem;
+      font-size: 0.88rem;
+    }
+    .comp-field-row label { font-weight: 500; min-width: 30px; }
+    .comp-field-row input {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      width: 70px;
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+    .comp-filter-btn {
+      width: 100%;
+      background: #1e3a6e;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0.4rem;
+      font-size: 0.88rem;
+      cursor: pointer;
+      margin-bottom: 0.8rem;
+      font-family: inherit;
+    }
+    .comp-filter-btn:hover { background: #2547a0; }
+    .comp-legend { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+    .comp-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      color: #fff;
+    }
+    .comp-legend-item.avail { background: #22c55e; }
+    .comp-legend-item.used  { background: #ef4444; }
+
+    /* ── Request / Log panels ── */
+    .res-panel-card {
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #dde3f0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .res-panel-header {
+      background: #1e3a6e;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.93rem;
+      padding: 0.65rem 1rem;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .res-panel-body {
+      padding: 0.75rem;
+      max-height: 520px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    /* ── Individual request card ── */
+    .res-request-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 0.7rem 0.85rem;
+      font-size: 0.84rem;
+      background: #fafafa;
+    }
+    .res-request-item .res-field { margin-bottom: 0.22rem; color: #333; }
+    .res-request-item .res-field strong { color: #1e3a6e; }
+    .res-actions { display: flex; gap: 0.5rem; margin-top: 0.55rem; }
+    .btn-accept {
+      background: #22c55e; color: #fff; border: none; border-radius: 4px;
+      padding: 0.25rem 0.85rem; font-size: 0.8rem; cursor: pointer; font-family: inherit;
+    }
+    .btn-accept:hover { background: #16a34a; }
+    .btn-deny {
+      background: #ef4444; color: #fff; border: none; border-radius: 4px;
+      padding: 0.25rem 0.85rem; font-size: 0.8rem; cursor: pointer; font-family: inherit;
+    }
+    .btn-deny:hover { background: #b91c1c; }
+
+    /* ── Log item ── */
+    .res-log-item {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 0.6rem;
+      font-size: 0.83rem;
+      color: #444;
+    }
+    .res-log-item:last-child { border-bottom: none; }
+    .res-log-item div { margin-bottom: 0.12rem; }
+    .status-pending  { color: #f59e0b; font-weight: 600; }
+    .status-accepted { color: #22c55e; font-weight: 600; }
+    .status-denied   { color: #ef4444; font-weight: 600; }
+    .no-items { color: #aaa; font-size: 0.85rem; text-align: center; padding: 1.2rem 0; }
+  </style>
+</head>
+<body class="admin-body">
+
+  <nav class="navbar admin-navbar">
+    <div class="admin-nav-brand">
+      <img src="CCS.png" alt="CCS" class="admin-logo" onerror="this.style.display='none'"/>
+      <span class="admin-brand">College of Computer Studies Admin</span>
+    </div>
+    <ul class="nav-links admin-nav" id="navLinks">
+      <li><a href="admin_dashboard.html">Home</a></li>
+      <li><a href="#" onclick="openModal('searchModal');return false;">Search</a></li>
+      <li><a href="admin_students.html">Students</a></li>
+      <li><a href="admin_sitin.html">Sit-in</a></li>
+      <li><a href="admin_sitin_records.html">View Sit-in Records</a></li>
+      <li><a href="admin_reports.html">Sit-in Reports</a></li>
+      <li><a href="admin_feedback.html">Feedback Reports</a></li>
+      <li><a href="admin_reservation.html" class="active">Reservation</a></li>
+      <li><a href="admin_leaderboard.html">Leaderboard</a></li>
+      <li><a href="admin_analytics.html">Analytics</a></li>
+      <li><a href="admin_rewards.html">Add Reward/Points</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="adminLogout();return false;">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="admin-main">
+    <h2 class="admin-page-title">Reservation</h2>
+
+    <div class="reservation-grid">
+
+      <!-- LEFT: Computer Control -->
+      <div class="comp-control-card">
+        <div class="comp-control-header">Computer Control</div>
+        <div class="comp-control-body">
+          <div class="comp-field-row">
+            <label>Lab</label>
+            <input type="text" id="labFilter" value="524" placeholder="e.g. 524"/>
+          </div>
+          <button class="comp-filter-btn" onclick="filterByLab()">Filter</button>
+          <div class="comp-legend">
+            <div class="comp-legend-item avail">Available</div>
+            <div class="comp-legend-item used">Used</div>
+          </div>
+          <div id="compGrid" style="margin-top:0.9rem;display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+      </div>
+
+      <!-- MIDDLE: Reservation Requests -->
+      <div class="res-panel-card">
+        <div class="res-panel-header">Reservation Request</div>
+        <div class="res-panel-body" id="requestList">
+          <div class="no-items">No pending reservation requests.</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Logs -->
+      <div class="res-panel-card">
+        <div class="res-panel-header">Logs</div>
+        <div class="res-panel-body" id="logList">
+          <div class="no-items">No reservation logs yet.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Search Modal -->
+  <div class="modal-overlay" id="searchModal">
+    <div class="modal-box search-modal-box">
+      <div class="modal-header-row">
+        <h3 class="modal-inner-title">Search Student</h3>
+        <button class="modal-close-x" onclick="closeModal('searchModal')">&#x2715;</button>
+      </div>
+      <input type="text" class="form-input" id="searchInput" placeholder="Search..." oninput="doSearch()"/>
+      <hr class="admin-hr" style="margin:0.9rem 0 0.7rem;"/>
+      <div style="text-align:right;"><button class="admin-btn-blue" onclick="doSearch()">Search</button></div>
+      <div id="searchResults" style="margin-top:0.8rem;"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    requireAdmin();
+
+    initDB().then(() => {
+      // Ensure reservations table exists
+      db.run(`CREATE TABLE IF NOT EXISTS reservations (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_number       TEXT NOT NULL,
+        lab             TEXT NOT NULL,
+        computer_num    INTEGER NOT NULL,
+        purpose         TEXT NOT NULL,
+        res_date        TEXT NOT NULL,
+        res_time        TEXT NOT NULL,
+        status          TEXT DEFAULT 'Pending',
+        created_at      TEXT DEFAULT (datetime('now'))
+      )`);
+      saveDB();
+      renderRequests();
+      renderLogs();
+      renderCompGrid();
+    });
+
+    function fmtDateNice(dt) {
+      if (!dt) return '—';
+      try {
+        const d = new Date(dt.replace(' ','T') + (dt.includes('T') ? '' : 'Z'));
+        return isNaN(d) ? dt : d.toLocaleDateString();
+      } catch(e) { return dt; }
+    }
+
+    // ── Render Requests (Pending only) ───────────────────────
+    function renderRequests() {
+      const r = db.exec(`SELECT * FROM reservations WHERE status='Pending' ORDER BY id DESC`);
+      const list = document.getElementById('requestList');
+      if (!r.length || !r[0].values.length) {
+        list.innerHTML = '<div class="no-items">No pending reservation requests.</div>';
+        return;
+      }
+      const rows = r[0].values.map((_,i) => rowToObj(r[0], i));
+      list.innerHTML = rows.map(row => `
+        <div class="res-request-item">
+          <div class="res-field"><strong>ID Number:</strong> ${row.id_number}</div>
+          <div class="res-field"><strong>Reservation Date:</strong> ${row.res_date}</div>
+          <div class="res-field"><strong>Reservation Time:</strong> ${row.res_time}</div>
+          <div class="res-field"><strong>Laboratory:</strong> ${row.lab}</div>
+          <div class="res-field"><strong>Computer Number:</strong> ${row.computer_num}</div>
+          <div class="res-field"><strong>Purpose:</strong> ${row.purpose}</div>
+          <div class="res-actions">
+            <button class="btn-accept" onclick="updateReservation(${row.id},'Accepted')">Accept</button>
+            <button class="btn-deny"   onclick="updateReservation(${row.id},'Denied')">Deny</button>
+          </div>
+        </div>`).join('');
+    }
+
+    // ── Render Logs (all) ────────────────────────────────────
+    function renderLogs() {
+      const r = db.exec(`SELECT * FROM reservations ORDER BY id DESC`);
+      const list = document.getElementById('logList');
+      if (!r.length || !r[0].values.length) {
+        list.innerHTML = '<div class="no-items">No reservation logs yet.</div>';
+        return;
+      }
+      const rows = r[0].values.map((_,i) => rowToObj(r[0], i));
+      list.innerHTML = rows.map(row => `
+        <div class="res-log-item">
+          <div><strong>ID Number:</strong> ${row.id_number}</div>
+          <div><strong>Reservation Date:</strong> ${row.res_date}</div>
+          <div><strong>Reservation Time:</strong> ${row.res_time}</div>
+          <div><strong>Laboratory:</strong> ${row.lab}</div>
+          <div><strong>Computer Number:</strong> ${row.computer_num}</div>
+          <div><strong>Purpose:</strong> ${row.purpose}</div>
+          <div><strong>Status:</strong>
+            <span class="status-${row.status.toLowerCase()}">${row.status}</span>
+          </div>
+        </div>`).join('');
+    }
+
+    // ── Accept / Deny ────────────────────────────────────────
+    function updateReservation(id, status) {
+      db.run('UPDATE reservations SET status=? WHERE id=?', [status, id]);
+      saveDB();
+      renderRequests();
+      renderLogs();
+      renderCompGrid();
+      showToast(`Reservation ${status.toLowerCase()}.`, status === 'Accepted' ? 'success' : 'error');
+    }
+
+    // ── Computer Grid ────────────────────────────────────────
+    function renderCompGrid() {
+      const lab = document.getElementById('labFilter').value.trim() || '524';
+      // Find which computer numbers are accepted for this lab
+      const r = db.exec(
+        `SELECT computer_num FROM reservations WHERE lab=? AND status='Accepted'`, [lab]
+      );
+      const used = new Set(
+        r.length && r[0].values.length ? r[0].values.map(v => v[0]) : []
+      );
+      const grid = document.getElementById('compGrid');
+      // Show 20 computer slots
+      grid.innerHTML = Array.from({length:20}, (_,i) => i+1).map(n => {
+        const isUsed = used.has(n);
+        return `<div title="PC ${n}" style="
+          width:36px;height:36px;border-radius:5px;display:flex;align-items:center;
+          justify-content:center;font-size:0.72rem;font-weight:600;color:#fff;
+          background:${isUsed ? '#ef4444' : '#22c55e'};cursor:default;">
+          ${n}
+        </div>`;
+      }).join('');
+    }
+
+    function filterByLab() { renderCompGrid(); }
+
+    function doSearch() {
+      const q = val('searchInput');
+      if (!q) { document.getElementById('searchResults').innerHTML=''; return; }
+      const r = db.exec(
+        `SELECT id_number,firstname,lastname FROM students WHERE id_number LIKE ? OR firstname LIKE ? OR lastname LIKE ?`,
+        [`%${q}%`,`%${q}%`,`%${q}%`]
+      );
+      const el = document.getElementById('searchResults');
+      if (!r.length||!r[0].values.length) { el.innerHTML='<p style="color:#888;font-size:0.88rem;">No students found.</p>'; return; }
+      el.innerHTML = r[0].values.map(row =>
+        `<div class="search-result-row"><strong>${row[0]}</strong> — ${row[1]} ${row[2]}</div>`).join('');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leaderboard — CCS Admin</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="admin.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── Formula pills ── */
+    .lb-formula {
+      display: flex; gap: .5rem; padding: .7rem 1rem;
+      background: #f8f9ff; border-bottom: 1px solid #e8ecf8; flex-wrap: wrap;
+    }
+    .lb-pill {
+      display: flex; align-items: center; gap: .3rem;
+      padding: .22rem .65rem; border-radius: 20px;
+      font-size: .76rem; font-weight: 600; white-space: nowrap;
+    }
+    .lb-pill-pts   { background: #fef3c7; color: #92400e; }
+    .lb-pill-hrs   { background: #d1fae5; color: #065f46; }
+    .lb-pill-task  { background: #ede9fe; color: #4c1d95; }
+    .lb-pill-score { background: #dbeafe; color: #1e40af; margin-left: auto; }
+    .pill-pct      { font-size: .68rem; opacity: .75; }
+
+    /* ── Podium ── */
+    .lb-podium {
+      display: flex; align-items: flex-end;
+      justify-content: center; gap: .6rem; margin: 1.2rem 0 1.4rem;
+    }
+    .podium-slot { display: flex; flex-direction: column; align-items: center; gap: .3rem; }
+    .podium-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg,#667eea,#764ba2);
+      color: #fff; font-weight: 700; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      border: 3px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,.18);
+    }
+    .podium-avatar.rank-1 { width: 64px; height: 64px; font-size: 1.15rem; background: linear-gradient(135deg,#f59e0b,#ef4444); }
+    .podium-avatar.rank-2 { background: linear-gradient(135deg,#6b7280,#374151); }
+    .podium-avatar.rank-3 { background: linear-gradient(135deg,#92400e,#b45309); }
+    .podium-crown { font-size: 1rem; }
+    .podium-name  { font-size: .73rem; font-weight: 600; color: #1a1a2e; text-align: center; max-width: 72px; word-break: break-word; }
+    .podium-score { font-size: .7rem; color: #6b7280; }
+    .podium-bar {
+      border-radius: 6px 6px 0 0; width: 56px;
+      display: flex; align-items: flex-end; justify-content: center;
+      font-size: .73rem; font-weight: 700; color: #fff; padding-bottom: 5px;
+    }
+    .podium-bar.rank-1 { background: linear-gradient(180deg,#fbbf24,#f59e0b); height: 78px; }
+    .podium-bar.rank-2 { background: linear-gradient(180deg,#9ca3af,#6b7280); height: 56px; }
+    .podium-bar.rank-3 { background: linear-gradient(180deg,#d97706,#92400e); height: 42px; }
+
+    /* ── List ── */
+    .lb-col-hdr {
+      display: grid;
+      grid-template-columns: 28px 1fr 52px 50px 48px 58px;
+      gap: .4rem; padding: .25rem .6rem;
+      font-size: .71rem; font-weight: 600; color: #9ca3af;
+      text-transform: uppercase; letter-spacing: .04em; margin-bottom: .2rem;
+    }
+    .lb-col-hdr span { text-align: center; }
+    .lb-col-hdr span:nth-child(2) { text-align: left; }
+
+    .lb-row {
+      display: grid;
+      grid-template-columns: 28px 1fr 52px 50px 48px 58px;
+      align-items: center; gap: .4rem;
+      padding: .45rem .6rem; border-radius: 8px;
+      font-size: .82rem; background: #f8f9fc;
+      margin-bottom: .35rem; transition: background .12s;
+    }
+    .lb-row:hover { background: #eef1ff; }
+    .lb-row.top3  { background: #fef9ec; }
+    .lb-rank-num  { font-weight: 700; color: #6b7280; text-align: center; font-size: .8rem; }
+    .lb-name      { font-weight: 600; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lb-cell      { text-align: center; font-size: .8rem; color: #555; }
+    .lb-score-badge {
+      background: linear-gradient(90deg,#1e3a6e,#2547a0);
+      color: #fff; border-radius: 20px;
+      padding: .18rem .5rem; font-size: .74rem; font-weight: 700; text-align: center;
+    }
+    .lb-empty { text-align: center; color: #aaa; font-size: .85rem; padding: 2rem 0; }
+
+    /* search/filter bar */
+    .lb-toolbar {
+      display: flex; align-items: center; gap: .6rem;
+      padding: .7rem 1rem; border-bottom: 1px solid #eef0f8; flex-wrap: wrap;
+    }
+    .lb-search {
+      padding: .38rem .75rem; border: 1.5px solid #d0d4e8;
+      border-radius: 7px; font-family: inherit; font-size: .84rem;
+      outline: none; width: 200px; transition: border .15s;
+    }
+    .lb-search:focus { border-color: #1e3a6e; }
+    .lb-count { font-size: .8rem; color: #888; margin-left: auto; }
+
+    .card-wrap {
+      background: #fff; border-radius: 12px;
+      border: 1px solid #dde3f0; box-shadow: 0 2px 12px rgba(46,64,153,.08);
+      overflow: hidden; margin-bottom: 1.4rem;
+    }
+    .card-head {
+      background: linear-gradient(90deg,#1e3a6e 0%,#2547a0 100%);
+      color: #fff; padding: .7rem 1.1rem;
+      font-weight: 700; font-size: .95rem;
+      display: flex; align-items: center; gap: .45rem;
+    }
+
+    @media (max-width: 600px) {
+      .lb-col-hdr, .lb-row {
+        grid-template-columns: 24px 1fr 40px 40px 36px 46px;
+      }
+    }
+  </style>
+</head>
+<body class="admin-body">
+  <nav class="navbar admin-navbar">
+    <div class="admin-nav-brand">
+      <img src="CCS.png" alt="CCS" class="admin-logo" onerror="this.style.display='none'"/>
+      <span class="admin-brand">College of Computer Studies Admin</span>
+    </div>
+    <ul class="nav-links admin-nav" id="navLinks">
+      <li><a href="admin_dashboard.html">Home</a></li>
+      <li><a href="#" onclick="openModal('searchModal');return false;">Search</a></li>
+      <li><a href="admin_students.html">Students</a></li>
+      <li><a href="admin_sitin.html">Sit-in</a></li>
+      <li><a href="admin_sitin_records.html">View Sit-in Records</a></li>
+      <li><a href="admin_reports.html">Sit-in Reports</a></li>
+      <li><a href="admin_feedback.html">Feedback Reports</a></li>
+      <li><a href="admin_reservation.html">Reservation</a></li>
+      <li><a href="admin_leaderboard.html" class="active">Leaderboard</a></li>
+      <li><a href="admin_analytics.html">Analytics</a></li>
+      <li><a href="admin_rewards.html">Add Reward/Points</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="adminLogout();return false;">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="admin-main">
+
+    <div class="card-wrap">
+      <div class="card-head">&#127942; Student Leaderboard</div>
+      <!-- Formula -->
+      <div class="lb-formula">
+        <div class="lb-pill lb-pill-pts">&#11088; Earned Points <span class="pill-pct">(50%)</span></div>
+        <div class="lb-pill lb-pill-hrs">&#9200; Sit-in Hours <span class="pill-pct">(30%)</span></div>
+        <div class="lb-pill lb-pill-task">&#9989; Tasks Completed <span class="pill-pct">(20%)</span></div>
+        <div class="lb-pill lb-pill-score">Score = 0.5&times;Pts + 0.3&times;Hrs + 0.2&times;Tasks</div>
+      </div>
+      <!-- Podium -->
+      <div style="padding:0 1rem;">
+        <div class="lb-podium" id="lbPodium">
+          <span style="color:#aaa;font-size:.85rem;">Loading...</span>
+        </div>
+      </div>
+      <!-- Search -->
+      <div class="lb-toolbar">
+        <input class="lb-search" type="text" id="lbSearch" placeholder="&#128269; Search student..." oninput="renderList()"/>
+        <span class="lb-count" id="lbCount"></span>
+      </div>
+      <!-- Column headers + list -->
+      <div style="padding:0 .5rem .8rem;">
+        <div class="lb-col-hdr">
+          <span>#</span><span style="text-align:left;">Student</span>
+          <span>Pts</span><span>Hrs</span><span>Tasks</span><span>Score</span>
+        </div>
+        <div id="lbList"><div class="lb-empty">Loading...</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    requireAdmin();
+    let _board = [];
+
+    initDB().then(() => {
+      dbEnsurePointsTable();
+      _board = dbGetLeaderboard();
+      renderPodium(_board.slice(0, 3));
+      renderList();
+    });
+
+    function initials(name) {
+      return name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    }
+
+    function renderPodium(top3) {
+      const el = document.getElementById('lbPodium');
+      if (!top3.length) { el.innerHTML = '<span style="color:#aaa;font-size:.85rem;">No students yet.</span>'; return; }
+      const order = top3.length >= 3 ? [top3[1],top3[0],top3[2]]
+                  : top3.length === 2 ? [top3[1],top3[0]] : [top3[0]];
+      const rankOf = p => top3.indexOf(p) + 1;
+      const crowns = { 1:'👑', 2:'🥈', 3:'🥉' };
+      el.innerHTML = order.map(p => {
+        const rk = rankOf(p);
+        return `
+          <div class="podium-slot">
+            <div class="podium-crown">${crowns[rk]||''}</div>
+            <div class="podium-avatar rank-${rk}">${initials(p.fullname)}</div>
+            <div class="podium-name">${p.fullname.split(' ')[0]}</div>
+            <div class="podium-score">${p.score} pts</div>
+            <div class="podium-bar rank-${rk}">#${rk}</div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderList() {
+      const q = (document.getElementById('lbSearch').value || '').toLowerCase();
+      const list = q ? _board.filter(r => r.fullname.toLowerCase().includes(q) || r.id_number.includes(q)) : _board;
+      document.getElementById('lbCount').textContent = `${list.length} student(s)`;
+      const el = document.getElementById('lbList');
+      if (!list.length) { el.innerHTML = '<div class="lb-empty">No students found.</div>'; return; }
+      el.innerHTML = list.map((r, i) => `
+        <div class="lb-row ${i < 3 && !q ? 'top3' : ''}">
+          <span class="lb-rank-num">${i + 1}</span>
+          <span class="lb-name" title="${r.fullname} (${r.id_number})">${r.fullname}</span>
+          <span class="lb-cell">${r.earned}</span>
+          <span class="lb-cell">${r.sitinHours}</span>
+          <span class="lb-cell">${r.tasks}</span>
+          <span class="lb-score-badge">${r.score}</span>
+        </div>`).join('');
+    }
+  </script>
+</body>
+</html>

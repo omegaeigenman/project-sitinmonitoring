@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register — CCS Sit-in Monitoring</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">
+      <img src="CCS.png" alt="CCS Logo" class="nav-logo" onerror="this.style.display='none'"/>
+      <span class="nav-title">College of Computer Studies Sit-in Monitoring System</span>
+    </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle">Community <span class="caret">▾</span></a>
+        <ul class="dropdown-menu"><li><a href="#">Forums</a></li><li><a href="#">Announcements</a></li><li><a href="#">Events</a></li></ul>
+      </li>
+      <li><a href="#">About</a></li>
+      <li><a href="login.html">Login</a></li>
+      <li><a href="register.html" class="active">Register</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="reg-wrapper">
+    <div class="reg-card">
+      <a href="index.html" class="back-btn">&#8592; Back</a>
+      <h2 class="reg-title">Sign up</h2>
+
+      <!-- Profile Picture -->
+      <div class="pic-upload-wrap">
+        <div class="pic-ring" onclick="document.getElementById('picInput').click()" title="Click to upload photo">
+          <img id="picPreview" src="" alt="" class="pic-img" style="display:none;"/>
+          <div class="pic-initials" id="picInitials">?</div>
+          <div class="pic-overlay">&#128247; Upload</div>
+        </div>
+        <p class="pic-hint">Click to add profile photo <span class="optional">(optional)</span></p>
+        <input type="file" id="picInput" accept="image/*" style="display:none;"
+               onchange="previewPic(this,'picPreview','picInitials')"/>
+      </div>
+
+      <div class="reg-grid">
+        <div class="form-group full-width">
+          <label class="form-label">ID Number <span class="req">*</span></label>
+          <input class="form-input" id="regId" placeholder="e.g. 20-2453-578" oninput="updateInitials()"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name <span class="req">*</span></label>
+          <input class="form-input" id="regLast" placeholder="Last name" oninput="updateInitials()"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">First Name <span class="req">*</span></label>
+          <input class="form-input" id="regFirst" placeholder="First name" oninput="updateInitials()"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Middle Name</label>
+          <input class="form-input" id="regMiddle" placeholder="Middle name"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Course <span class="req">*</span></label>
+          <select class="form-input form-select" id="regCourse">
+            <option value="" disabled selected>Select course</option>
+            <option>Information Technology</option>
+            <option>Computer Engineering</option>
+            <option>Civil Engineering</option>
+            <option>Mechanical Engineering</option>
+            <option>Electrical Engineering</option>
+            <option>Industrial Engineering</option>
+            <option>Naval Architecture and Marine Engineering</option>
+            <option>Elementary Education (BEEd)</option>
+            <option>Secondary Education (BSEd)</option>
+            <option>Criminology</option>
+            <option>Commerce</option>
+            <option>Accountancy</option>
+            <option>Hotel and Restaurant Management</option>
+            <option>Customs Administration</option>
+            <option>Computer Secretarial</option>
+            <option>Industrial Psychology</option>
+            <option>AB Political Science</option>
+            <option>AB English</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Year Level <span class="req">*</span></label>
+          <select class="form-input form-select" id="regYear">
+            <option value="" disabled selected>Select year</option>
+            <option value="1">1st Year</option>
+            <option value="2">2nd Year</option>
+            <option value="3">3rd Year</option>
+            <option value="4">4th Year</option>
+          </select>
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">Email Address <span class="req">*</span></label>
+          <input type="email" class="form-input" id="regEmail" placeholder="your@email.com"/>
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">Address <span class="req">*</span></label>
+          <input class="form-input" id="regAddress" placeholder="e.g. Labangon, Cebu City"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Username <span class="req">*</span></label>
+          <input class="form-input" id="regUsername" placeholder="Choose a username"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password <span class="req">*</span></label>
+          <div class="pw-wrap">
+            <input type="password" class="form-input" id="regPass" placeholder="Min. 8 characters"/>
+            <button class="pw-toggle" type="button" onclick="togglePass('regPass',this)">&#128065;</button>
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">Confirm Password <span class="req">*</span></label>
+          <div class="pw-wrap">
+            <input type="password" class="form-input" id="regConfirm" placeholder="Repeat your password"/>
+            <button class="pw-toggle" type="button" onclick="togglePass('regConfirm',this)">&#128065;</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="handleRegister()">Create Account</button>
+      <p class="auth-footer">Already have an account? <a href="login.html" class="link-accent">Login</a></p>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    window._pendingPic = null;
+    initDB();
+
+    function updateInitials() {
+      if (window._pendingPic) return;
+      const f = document.getElementById('regFirst').value.trim();
+      const l = document.getElementById('regLast').value.trim();
+      document.getElementById('picInitials').textContent = ((f[0]||'')+(l[0]||'')||'?').toUpperCase();
+    }
+
+    function handleRegister() {
+      const id_number  = val('regId');
+      const lastname   = val('regLast');
+      const firstname  = val('regFirst');
+      const midname    = val('regMiddle');
+      const course     = val('regCourse');
+      const year_level = val('regYear');
+      const email      = val('regEmail');
+      const address    = val('regAddress');
+      const username   = val('regUsername');
+      const password   = val('regPass');
+      const confirm    = val('regConfirm');
+
+      if (!id_number||!lastname||!firstname||!course||!year_level||!email||!address||!username||!password) {
+        showToast('Please fill in all required fields.','error'); return;
+      }
+      if (!validEmail(email)) { showToast('Please enter a valid email address.','error'); return; }
+      if (password.length < 8) { showToast('Password must be at least 8 characters.','error'); return; }
+      if (password !== confirm) { showToast('Passwords do not match.','error'); return; }
+
+      const result = dbRegister({ id_number,lastname,firstname,midname,course,year_level,email,address,username,password });
+      if (result.ok) {
+        if (window._pendingPic) saveProfilePic(id_number, window._pendingPic);
+        showToast('Account created! Redirecting to login...','success');
+        setTimeout(() => window.location.href = 'login.html', 1600);
+      } else {
+        showToast(result.error,'error');
+      }
+    }
+  </script>
+</body>
+</html>
