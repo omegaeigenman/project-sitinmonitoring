@@ -3,11 +3,50 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Leaderboard — CCS Admin</title>
+  <title>Leaderboard — CCS Sit-in Monitoring</title>
   <link rel="stylesheet" href="style.css"/>
-  <link rel="stylesheet" href="admin.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
+    body { background: #f4f6fb; }
+
+    .page-wrap {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 1.6rem 1.2rem 2.5rem;
+    }
+
+    /* ── Page Header ── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.6rem;
+    }
+    .page-title {
+      font-size: 1.45rem; font-weight: 800; color: #1a1a2e;
+      display: flex; align-items: center; gap: .55rem;
+      text-transform: uppercase; letter-spacing: .02em;
+    }
+    .page-title-icon {
+      font-size: 1.3rem; background: #2E4099; color: #fff;
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Card container ── */
+    .card-wrap {
+      background: #fff; border-radius: 12px;
+      border: 1.5px solid #e5e7f0;
+      box-shadow: 0 2px 12px rgba(46,64,153,.07);
+      overflow: hidden; margin-bottom: 1.4rem;
+    }
+    .card-head {
+      background: linear-gradient(90deg,#1e3a6e 0%,#2547a0 100%);
+      color: #fff; padding: .8rem 1.1rem;
+      font-weight: 700; font-size: 1rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+
     /* ── Formula pills ── */
     .lb-formula {
       display: flex; gap: .5rem; padding: .7rem 1rem;
@@ -51,6 +90,38 @@
     .podium-bar.rank-1 { background: linear-gradient(180deg,#fbbf24,#f59e0b); height: 78px; }
     .podium-bar.rank-2 { background: linear-gradient(180deg,#9ca3af,#6b7280); height: 56px; }
     .podium-bar.rank-3 { background: linear-gradient(180deg,#d97706,#92400e); height: 42px; }
+
+    /* ── Highlight current student ── */
+    .lb-row.me {
+      background: linear-gradient(90deg, #eef1ff, #e0e7ff) !important;
+      border-left: 3px solid #2547a0;
+    }
+    .lb-me-badge {
+      display: inline-block; background: #2547a0; color: #fff;
+      font-size: .62rem; font-weight: 700; padding: .1rem .4rem;
+      border-radius: 8px; margin-left: .3rem; vertical-align: middle;
+    }
+
+    /* ── My rank card ── */
+    .my-rank-card {
+      display: flex; align-items: center; gap: 1rem;
+      background: linear-gradient(135deg, #1e3a6e 0%, #2547a0 100%);
+      color: #fff; border-radius: 10px; padding: .9rem 1.2rem;
+      margin: 0 1rem 1rem; box-shadow: 0 3px 12px rgba(30,58,110,.35);
+    }
+    .my-rank-num {
+      font-size: 1.7rem; font-weight: 800;
+      min-width: 56px; text-align: center;
+      line-height: 1;
+    }
+    .my-rank-num small { display: block; font-size: .65rem; font-weight: 600; opacity: .7; margin-top: 2px; }
+    .my-rank-info { flex: 1; }
+    .my-rank-name { font-weight: 700; font-size: .92rem; }
+    .my-rank-stats { font-size: .76rem; opacity: .8; margin-top: .15rem; }
+    .my-rank-score {
+      background: rgba(255,255,255,.2); border-radius: 20px;
+      padding: .3rem .8rem; font-weight: 700; font-size: .9rem;
+    }
 
     /* ── List ── */
     .lb-col-hdr {
@@ -96,53 +167,54 @@
     .lb-search:focus { border-color: #1e3a6e; }
     .lb-count { font-size: .8rem; color: #888; margin-left: auto; }
 
-    .card-wrap {
-      background: #fff; border-radius: 12px;
-      border: 1px solid #dde3f0; box-shadow: 0 2px 12px rgba(46,64,153,.08);
-      overflow: hidden; margin-bottom: 1.4rem;
-    }
-    .card-head {
-      background: linear-gradient(90deg,#1e3a6e 0%,#2547a0 100%);
-      color: #fff; padding: .7rem 1.1rem;
-      font-weight: 700; font-size: .95rem;
-      display: flex; align-items: center; gap: .45rem;
-    }
-
     @media (max-width: 600px) {
       .lb-col-hdr, .lb-row {
         grid-template-columns: 24px 1fr 40px 40px 36px 46px;
       }
+      .my-rank-card { flex-wrap: wrap; }
     }
   </style>
 </head>
-<body class="admin-body">
-  <nav class="navbar admin-navbar">
-    <div class="admin-nav-brand">
-      <img src="CCS.png" alt="CCS" class="admin-logo" onerror="this.style.display='none'"/>
-      <span class="admin-brand">College of Computer Studies Admin</span>
-    </div>
-    <ul class="nav-links admin-nav" id="navLinks">
-      <li><a href="admin_dashboard.html">Home</a></li>
-      <li><a href="#" onclick="openModal('searchModal');return false;">Search</a></li>
-      <li><a href="admin_students.html">Students</a></li>
-      <li><a href="admin_sitin.html">Sit-in</a></li>
-      <li><a href="admin_sitin_records.html">View Sit-in Records</a></li>
-      <li><a href="admin_reports.html">Sit-in Reports</a></li>
-      <li><a href="admin_feedback.html">Feedback Reports</a></li>
-      <li><a href="admin_reservation.html">Reservation</a></li>
-      <li><a href="admin_leaderboard.html" class="active">Leaderboard</a></li>
-      <li><a href="admin_analytics.html">Analytics</a></li>
-      <li><a href="admin_rewards.html">Rewards</a></li>
-      <li><a href="admin_software.html">Software</a></li>
-      <li><a href="#" class="btn-logout-nav" onclick="adminLogout();return false;">Log out</a></li>
+<body>
+  <nav class="navbar dash-navbar">
+    <div class="dash-brand" style="display:flex;align-items:center;gap:0.5rem;"><img src="CCS.png" alt="CCS" style="width:30px;height:30px;object-fit:contain;border-radius:50%;border:1.5px solid rgba(245,168,0,0.5);" onerror="this.style.display='none'"/><span>College of Computer Studies</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="student_notifications.html">Notifications</a></li>
+      <li><a href="dashboard.html">Home</a></li>
+      <li><a href="student_session.html">My Sessions</a></li>
+      <li><a href="student_history.html">History &amp; Feedback</a></li>
+      <li><a href="student_reservation.html">Reservation</a></li>
+      <li><a href="edit_profile.html">Edit Profile</a></li>
+      <li><a href="student_labstatus.html">Lab Status</a></li>
+      <li><a href="student_leaderboard.html" class="active">Leaderboard</a></li>
+      <li><a href="student_summary.html">My Summary</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="handleLogout()">Log out</a></li>
     </ul>
     <button class="hamburger" id="hamburger">&#9776;</button>
   </nav>
 
-  <div class="admin-main">
+  <div class="page-wrap">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <span class="page-title-icon">&#127942;</span>
+        Student Leaderboard
+      </div>
+    </div>
 
     <div class="card-wrap">
-      <div class="card-head">&#127942; Student Leaderboard</div>
+      <div class="card-head">&#127942; Leaderboard Rankings</div>
+
+
+      <!-- My Rank Card -->
+      <div class="my-rank-card" id="myRankCard" style="display:none;">
+        <div class="my-rank-num" id="myRankNum">—<small>Your Rank</small></div>
+        <div class="my-rank-info">
+          <div class="my-rank-name" id="myRankName">—</div>
+          <div class="my-rank-stats" id="myRankStats">—</div>
+        </div>
+        <div class="my-rank-score" id="myRankScore">0</div>
+      </div>
 
       <!-- Podium -->
       <div style="padding:0 1rem;">
@@ -171,18 +243,38 @@
   <script src="db.js"></script>
   <script src="script.js"></script>
   <script>
-    requireAdmin();
     let _board = [];
+    let _myId  = '';
 
-    initDB().then(() => {
+    async function initLeaderboard() {
+      const sess = sessionGet();
+      if (!sess) { window.location.href = 'login.html'; return; }
+      _myId = sess.id_number;
+
+      await initDB();
       dbEnsurePointsTable();
       _board = dbGetLeaderboard();
+
+      // Render my rank card
+      renderMyRank();
       renderPodium(_board.slice(0, 3));
       renderList();
-    });
+    }
 
     function initials(name) {
       return name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    }
+
+    function renderMyRank() {
+      const idx = _board.findIndex(r => r.id_number === _myId);
+      const card = document.getElementById('myRankCard');
+      if (idx < 0) { card.style.display = 'none'; return; }
+      const me = _board[idx];
+      card.style.display = 'flex';
+      document.getElementById('myRankNum').innerHTML = `#${idx + 1}<small>Your Rank</small>`;
+      document.getElementById('myRankName').textContent = me.fullname;
+      document.getElementById('myRankStats').textContent = `${me.earned} pts · ${me.sitinHours} hrs · ${me.tasks} tasks`;
+      document.getElementById('myRankScore').textContent = me.score;
     }
 
     function renderPodium(top3) {
@@ -194,11 +286,12 @@
       const crowns = { 1:'👑', 2:'🥈', 3:'🥉' };
       el.innerHTML = order.map(p => {
         const rk = rankOf(p);
+        const isMe = p.id_number === _myId;
         return `
           <div class="podium-slot">
             <div class="podium-crown">${crowns[rk]||''}</div>
             <div class="podium-avatar rank-${rk}">${initials(p.fullname)}</div>
-            <div class="podium-name">${p.fullname.split(' ')[0]}</div>
+            <div class="podium-name">${p.fullname.split(' ')[0]}${isMe ? ' <span class="lb-me-badge">YOU</span>' : ''}</div>
             <div class="podium-score">${p.score} pts</div>
             <div class="podium-bar rank-${rk}">#${rk}</div>
           </div>`;
@@ -211,16 +304,22 @@
       document.getElementById('lbCount').textContent = `${list.length} student(s)`;
       const el = document.getElementById('lbList');
       if (!list.length) { el.innerHTML = '<div class="lb-empty">No students found.</div>'; return; }
-      el.innerHTML = list.map((r, i) => `
-        <div class="lb-row ${i < 3 && !q ? 'top3' : ''}">
+      el.innerHTML = list.map((r, i) => {
+        const isMe = r.id_number === _myId;
+        return `
+        <div class="lb-row ${i < 3 && !q ? 'top3' : ''} ${isMe ? 'me' : ''}">
           <span class="lb-rank-num">${i + 1}</span>
-          <span class="lb-name" title="${r.fullname} (${r.id_number})">${r.fullname}</span>
+          <span class="lb-name" title="${r.fullname} (${r.id_number})">${r.fullname}${isMe ? ' <span class="lb-me-badge">YOU</span>' : ''}</span>
           <span class="lb-cell">${r.earned}</span>
           <span class="lb-cell">${r.sitinHours}</span>
           <span class="lb-cell">${r.tasks}</span>
           <span class="lb-score-badge">${r.score}</span>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     }
+
+    function handleLogout() { sessionClear(); window.location.href = 'login.html'; }
+    document.addEventListener('DOMContentLoaded', initLeaderboard);
   </script>
 </body>
 </html>

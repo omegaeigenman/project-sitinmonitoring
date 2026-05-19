@@ -1,0 +1,360 @@
+/* =============================================
+   dark-mode.css — CCS Dark Mode Overrides
+   ============================================= */
+
+/* ── Base ── */
+body.dark-mode,
+body.dark-mode.admin-body {
+  background: #0f1117 !important;
+  color: #e5e7eb !important;
+}
+
+/* ── Navbar ── */
+body.dark-mode .navbar,
+body.dark-mode .dash-navbar,
+body.dark-mode .admin-navbar {
+  background: #111827 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+}
+body.dark-mode .nav-links a { color: rgba(255,255,255,0.85) !important; }
+body.dark-mode .nav-links a:hover,
+body.dark-mode .nav-links a.active { color: #F5A800 !important; background: rgba(245,168,0,0.12) !important; }
+body.dark-mode .btn-logout-nav { background: #F5A800 !important; color: #111 !important; }
+
+/* Mobile nav dropdown */
+@media (max-width: 680px) {
+  body.dark-mode .nav-links { background: #111827 !important; }
+}
+
+/* ── Dark mode toggle button ── */
+.dark-mode-toggle {
+  background: none; border: none;
+  color: #fff; border-radius: 50%; padding: 0.25rem;
+  font-size: 1.15rem; cursor: pointer; white-space: nowrap;
+  transition: transform 0.2s, background 0.15s;
+  font-family: inherit; display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; flex-shrink: 0; margin-left: 0.5rem;
+  line-height: 1;
+}
+.dark-mode-toggle:hover { background: rgba(255,255,255,0.12); transform: scale(1.15); }
+
+/* ── Cards / Panels ── */
+body.dark-mode .dash-col,
+body.dark-mode .admin-card,
+body.dark-mode .reg-card,
+body.dark-mode .modal-box,
+body.dark-mode .sw-card,
+body.dark-mode .card-wrap,
+body.dark-mode .section-card,
+body.dark-mode .announcement-box {
+  background: #1a1d2e !important;
+  border-color: #2d3348 !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3) !important;
+}
+
+/* Card headers that are blue — keep but darken slightly */
+body.dark-mode .dash-col-header,
+body.dark-mode .admin-card-header,
+body.dark-mode .announcement-header,
+body.dark-mode .sw-card-head,
+body.dark-mode .card-head,
+body.dark-mode .section-header,
+body.dark-mode .lab-overview-head {
+  background: linear-gradient(90deg, #152040, #1e3060) !important;
+  color: #e5e7eb !important;
+  border-color: #2d3348 !important;
+}
+body.dark-mode .sw-card-head.upload {
+  background: linear-gradient(90deg, #064e3b, #065f46) !important;
+}
+
+/* Card bodies */
+body.dark-mode .dash-col-body,
+body.dark-mode .admin-card-body,
+body.dark-mode .sw-card-body {
+  background: #1a1d2e !important;
+}
+
+/* ── Text colors ── */
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3,
+body.dark-mode .reg-title,
+body.dark-mode .page-title,
+body.dark-mode .sw-page-title,
+body.dark-mode .admin-page-title,
+body.dark-mode .modal-title,
+body.dark-mode .rules-uni,
+body.dark-mode .rules-college,
+body.dark-mode .rules-title,
+body.dark-mode .ann-meta,
+body.dark-mode .sw-row-name,
+body.dark-mode .sw-name,
+body.dark-mode .lab-name,
+body.dark-mode .posted-label,
+body.dark-mode .ann-post-meta,
+body.dark-mode .modal-inner-title,
+body.dark-mode .stat-line,
+body.dark-mode .detail-text strong {
+  color: #f3f4f6 !important;
+}
+
+body.dark-mode .detail-text,
+body.dark-mode .rules-intro,
+body.dark-mode .rules-item,
+body.dark-mode .rules-sublist li,
+body.dark-mode .modal-msg,
+body.dark-mode .admin-table td,
+body.dark-mode .search-result-row,
+body.dark-mode .sw-row-desc,
+body.dark-mode .notif-body,
+body.dark-mode .ann-content {
+  color: #d1d5db !important;
+}
+
+body.dark-mode .form-label,
+body.dark-mode .sw-label,
+body.dark-mode .sitin-label,
+body.dark-mode .login-field-label {
+  color: #d1d5db !important;
+}
+
+body.dark-mode .sw-row-cat,
+body.dark-mode .sw-desc,
+body.dark-mode .lab-sub,
+body.dark-mode .notif-time,
+body.dark-mode .field-note,
+body.dark-mode .pic-hint,
+body.dark-mode .table-info,
+body.dark-mode .lb-count {
+  color: #9ca3af !important;
+}
+
+/* ── Form inputs ── */
+body.dark-mode .form-input,
+body.dark-mode .login-input,
+body.dark-mode .sw-input,
+body.dark-mode .sw-select,
+body.dark-mode .sw-textarea,
+body.dark-mode .sw-search,
+body.dark-mode .admin-textarea,
+body.dark-mode .table-search-input,
+body.dark-mode .lb-search {
+  background: #111827 !important;
+  border-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+body.dark-mode .form-input:focus,
+body.dark-mode .login-input:focus,
+body.dark-mode .sw-input:focus,
+body.dark-mode .sw-select:focus,
+body.dark-mode .sw-textarea:focus,
+body.dark-mode .sw-search:focus,
+body.dark-mode .table-search-input:focus,
+body.dark-mode .lb-search:focus {
+  border-color: #4f6abb !important;
+  box-shadow: 0 0 0 3px rgba(79,106,187,0.2) !important;
+}
+body.dark-mode .form-input::placeholder,
+body.dark-mode .login-input::placeholder,
+body.dark-mode .sw-input::placeholder,
+body.dark-mode .sw-textarea::placeholder,
+body.dark-mode .sw-search::placeholder {
+  color: #6b7280 !important;
+}
+
+/* Disabled inputs */
+body.dark-mode .form-input:disabled,
+body.dark-mode input:disabled {
+  background: #1f2937 !important;
+  color: #6b7280 !important;
+}
+
+/* ── Tables ── */
+body.dark-mode .admin-table-wrap {
+  border-color: #2d3348 !important;
+}
+body.dark-mode .admin-table thead tr {
+  background: #1f2937 !important;
+}
+body.dark-mode .admin-table th {
+  color: #e5e7eb !important;
+  border-bottom-color: #374151 !important;
+}
+body.dark-mode .admin-table td {
+  border-bottom-color: #1f2937 !important;
+}
+body.dark-mode .row-even { background: #1a1d2e !important; }
+body.dark-mode .row-odd  { background: #151825 !important; }
+body.dark-mode .admin-table tr:hover td { background: #1e2540 !important; }
+
+/* ── Login page ── */
+body.dark-mode .login-page { background: #0f1117 !important; }
+body.dark-mode .login-register-text,
+body.dark-mode .auth-footer { color: #9ca3af !important; }
+body.dark-mode .forgot-link { color: #d1d5db !important; }
+body.dark-mode .check-label { color: #d1d5db !important; }
+
+/* ── Register / Edit profile ── */
+body.dark-mode .reg-wrapper { background: #0f1117 !important; }
+body.dark-mode .section-divider { border-top-color: #374151 !important; color: #d1d5db !important; }
+body.dark-mode .btn-cancel { background: #1f2937 !important; color: #d1d5db !important; border-color: #374151 !important; }
+body.dark-mode .btn-cancel:hover { background: #374151 !important; }
+
+/* ── Dashboard grid ── */
+body.dark-mode .dash-grid { background: #0f1117 !important; }
+body.dark-mode .ann-content { background: #111827 !important; }
+body.dark-mode .ann-content.empty { background: #151825 !important; }
+body.dark-mode .student-divider,
+body.dark-mode .ann-divider,
+body.dark-mode .admin-hr { border-color: #2d3348 !important; }
+body.dark-mode .rules-header { background: #1f2937 !important; color: #e5e7eb !important; }
+body.dark-mode .ann-post-text { color: #60a5fa !important; }
+
+/* ── Scrollbar ── */
+body.dark-mode .dash-col-body::-webkit-scrollbar-track,
+body.dark-mode .sw-list::-webkit-scrollbar-track { background: #111827 !important; }
+body.dark-mode .dash-col-body::-webkit-scrollbar-thumb,
+body.dark-mode .sw-list::-webkit-scrollbar-thumb { background: #374151 !important; }
+
+/* ── Modal ── */
+body.dark-mode .modal-overlay { background: rgba(0,0,0,0.6) !important; }
+body.dark-mode .modal-box,
+body.dark-mode .search-modal-box,
+body.dark-mode .sitin-modal-box,
+body.dark-mode .form-modal-box { background: #1a1d2e !important; }
+
+/* ── Toast ── */
+body.dark-mode .toast { background: #1f2937 !important; }
+
+/* ── Software rows ── */
+body.dark-mode .sw-row { border-bottom-color: #1f2937 !important; }
+body.dark-mode .sw-row:hover { background: #1e2540 !important; }
+body.dark-mode .sw-search-wrap { border-bottom-color: #2d3348 !important; }
+
+/* ── Drop zone ── */
+body.dark-mode .drop-zone { background: #111827 !important; border-color: #374151 !important; }
+body.dark-mode .drop-zone:hover,
+body.dark-mode .drop-zone.dragover { border-color: #4f6abb !important; background: #151d30 !important; }
+body.dark-mode .drop-text { color: #e5e7eb !important; }
+body.dark-mode .drop-sub { color: #6b7280 !important; }
+
+/* ── Lab overview cards ── */
+body.dark-mode .lab-overview { background: #1a1d2e !important; border-color: #2d3348 !important; }
+body.dark-mode .lab-ov-card { background: #111827 !important; border-color: #2d3348 !important; }
+body.dark-mode .lab-ov-count { color: #f3f4f6 !important; }
+body.dark-mode .lab-ov-lbl { color: #9ca3af !important; }
+
+/* ── Lab checkbox labels ── */
+body.dark-mode .lab-check-label { color: #d1d5db !important; }
+
+/* ── Student pages: notification cards ── */
+body.dark-mode .notif-card { background: #1a1d2e !important; border-color: #2d3348 !important; }
+body.dark-mode .notif-card:hover { border-color: #4f6abb !important; }
+body.dark-mode .notif-title { color: #f3f4f6 !important; }
+body.dark-mode .notif-toolbar { border-color: #2d3348 !important; }
+body.dark-mode .notif-filter-btn { background: #111827 !important; border-color: #374151 !important; color: #9ca3af !important; }
+body.dark-mode .notif-filter-btn.active { background: #1e3060 !important; color: #fff !important; border-color: #1e3060 !important; }
+body.dark-mode .mark-all-btn { border-color: #374151 !important; color: #9ca3af !important; }
+body.dark-mode .mark-all-btn:hover { background: #1e2540 !important; color: #e5e7eb !important; }
+body.dark-mode .notif-sum-pill { background: #111827 !important; border-color: #2d3348 !important; color: #d1d5db !important; }
+body.dark-mode .sitin-active-banner { box-shadow: 0 4px 16px rgba(99,102,241,0.25) !important; }
+
+/* ── Student lab status cards ── */
+body.dark-mode .lab-card { background: #1a1d2e !important; border-color: #2d3348 !important; }
+body.dark-mode .lab-card:hover { border-color: #4f6abb !important; }
+body.dark-mode .lab-icon { background: #1f2937 !important; }
+body.dark-mode .lab-progress { background: #1f2937 !important; }
+body.dark-mode .software-card { background: #1a1d2e !important; border-color: #2d3348 !important; }
+body.dark-mode .software-card:hover { border-color: #4f6abb !important; }
+
+/* ── Leaderboard ── */
+body.dark-mode .lb-row { background: #111827 !important; }
+body.dark-mode .lb-row:hover { background: #1e2540 !important; }
+body.dark-mode .lb-row.top3 { background: #1a1a10 !important; }
+body.dark-mode .lb-row.me { background: linear-gradient(90deg, #151d30, #1a2340) !important; border-left-color: #4f6abb !important; }
+body.dark-mode .lb-col-hdr { color: #6b7280 !important; }
+body.dark-mode .lb-rank-num { color: #9ca3af !important; }
+body.dark-mode .lb-name { color: #f3f4f6 !important; }
+body.dark-mode .lb-cell { color: #9ca3af !important; }
+body.dark-mode .lb-toolbar { border-bottom-color: #2d3348 !important; }
+body.dark-mode .lb-formula { background: #111827 !important; border-bottom-color: #2d3348 !important; }
+
+/* ── My Summary ── */
+body.dark-mode .summary-stat-card,
+body.dark-mode .summary-card { background: #1a1d2e !important; border-color: #2d3348 !important; }
+body.dark-mode .summary-stat-value { color: #f3f4f6 !important; }
+body.dark-mode .summary-stat-label { color: #9ca3af !important; }
+
+/* Generic summary table overrides */
+body.dark-mode table { border-color: #2d3348 !important; }
+body.dark-mode th { background: #1f2937 !important; color: #e5e7eb !important; border-color: #374151 !important; }
+body.dark-mode td { color: #d1d5db !important; border-color: #1f2937 !important; }
+body.dark-mode tr:nth-child(even) { background: #151825 !important; }
+body.dark-mode tr:nth-child(odd) { background: #1a1d2e !important; }
+body.dark-mode tr:hover { background: #1e2540 !important; }
+
+/* ── Pagination ── */
+body.dark-mode .page-btn { background: #1a1d2e !important; border-color: #374151 !important; color: #d1d5db !important; }
+body.dark-mode .page-btn:hover { background: #1e2540 !important; }
+body.dark-mode .active-page { background: #2E4099 !important; color: #fff !important; border-color: #2E4099 !important; }
+
+/* ── Status badges — keep visible ── */
+body.dark-mode .badge-active { background: #064e3b !important; color: #6ee7b7 !important; }
+body.dark-mode .badge-done { background: #450a0a !important; color: #fca5a5 !important; }
+
+/* ── SW icon backgrounds — slightly darken ── */
+body.dark-mode .sw-icon.blue,
+body.dark-mode .sw-row-icon.blue { background: #1e2a50 !important; }
+body.dark-mode .sw-icon.cyan,
+body.dark-mode .sw-row-icon.cyan { background: #0c3547 !important; }
+body.dark-mode .sw-icon.orange,
+body.dark-mode .sw-row-icon.orange { background: #3b1f05 !important; }
+body.dark-mode .sw-icon.green,
+body.dark-mode .sw-row-icon.green { background: #052e16 !important; }
+body.dark-mode .sw-icon.teal,
+body.dark-mode .sw-row-icon.teal { background: #042f2e !important; }
+body.dark-mode .sw-icon.red,
+body.dark-mode .sw-row-icon.red { background: #350a0a !important; }
+body.dark-mode .sw-icon.purple,
+body.dark-mode .sw-row-icon.purple { background: #2e1065 !important; }
+body.dark-mode .sw-icon.pink,
+body.dark-mode .sw-row-icon.pink { background: #3b0724 !important; }
+body.dark-mode .sw-icon.amber,
+body.dark-mode .sw-row-icon.amber { background: #3b2506 !important; }
+body.dark-mode .sw-icon.indigo,
+body.dark-mode .sw-row-icon.indigo { background: #1e1b4b !important; }
+
+/* ── Notification icon backgrounds ── */
+body.dark-mode .icon-ann { background: #1e2a50 !important; }
+body.dark-mode .icon-alert { background: #350a0a !important; }
+body.dark-mode .icon-res { background: #052e16 !important; }
+body.dark-mode .icon-pts { background: #3b2506 !important; }
+body.dark-mode .icon-sitin { background: #2e1065 !important; }
+body.dark-mode .icon-ended { background: #3b0724 !important; }
+
+/* ── SW badge lab-tag ── */
+body.dark-mode .sw-badge.lab-tag { background: #1f2937 !important; color: #9ca3af !important; border-color: #374151 !important; }
+body.dark-mode .sw-badge.installed { background: #052e16 !important; color: #6ee7b7 !important; }
+
+/* ── Back link / buttons ── */
+body.dark-mode .back-link { color: #60a5fa !important; }
+
+/* ── Podium ── */
+body.dark-mode .podium-name { color: #f3f4f6 !important; }
+body.dark-mode .podium-score { color: #9ca3af !important; }
+
+/* ── My rank card — keep gradient but darken ── */
+body.dark-mode .my-rank-card { background: linear-gradient(135deg, #152040, #1e3060) !important; }
+
+/* ── Select dropdown arrow fix ── */
+body.dark-mode .form-select,
+body.dark-mode .sw-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%236b7280' d='M5 6L0 0h10z'/%3E%3C/svg%3E") !important;
+}
+
+/* ── Search result rows ── */
+body.dark-mode .search-result-row { border-bottom-color: #1f2937 !important; }
+body.dark-mode .search-result-row:hover,
+body.dark-mode .search-result-clickable:hover { background: #1e2540 !important; }
+
+/* ── Misc borders ── */
+body.dark-mode .notif-nav-badge { border-color: #111827 !important; }

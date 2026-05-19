@@ -9,14 +9,17 @@
 </head>
 <body>
   <nav class="navbar dash-navbar">
-    <span class="dash-brand">&#127979; CCS Dashboard</span>
+    <div class="dash-brand" style="display:flex;align-items:center;gap:0.5rem;"><img src="CCS.png" alt="CCS" style="width:30px;height:30px;object-fit:contain;border-radius:50%;border:1.5px solid rgba(245,168,0,0.5);" onerror="this.style.display='none'"/><span>College of Computer Studies</span></div>
     <ul class="nav-links" id="navLinks">
+      <li><a href="student_notifications.html">Notifications</a></li>
       <li><a href="dashboard.html" class="active">Home</a></li>
       <li><a href="student_session.html">My Sessions</a></li>
       <li><a href="student_history.html">History &amp; Feedback</a></li>
       <li><a href="student_reservation.html">Reservation</a></li>
-      <li><a href="student_notifications.html">Notifications</a></li>
       <li><a href="edit_profile.html">Edit Profile</a></li>
+      <li><a href="student_labstatus.html">Lab Status</a></li>
+      <li><a href="student_leaderboard.html">Leaderboard</a></li>
+      <li><a href="student_summary.html">My Summary</a></li>
       <li><a href="#" class="btn-logout-nav" onclick="handleLogout()">Log out</a></li>
     </ul>
     <button class="hamburger" id="hamburger">&#9776;</button>

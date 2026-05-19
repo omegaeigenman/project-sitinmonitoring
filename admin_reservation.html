@@ -3,149 +3,191 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reservation — CCS Admin</title>
+  <title>Reservation Management — CCS Admin</title>
   <link rel="stylesheet" href="style.css"/>
   <link rel="stylesheet" href="admin.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
-    /* ── Reservation grid ── */
-    .reservation-grid {
-      display: grid;
-      grid-template-columns: 220px 1fr 1fr;
-      gap: 1.1rem;
-      align-items: start;
-    }
-    @media (max-width: 1000px) {
-      .reservation-grid { grid-template-columns: 200px 1fr 1fr; }
-    }
-    @media (max-width: 780px) {
-      .reservation-grid { grid-template-columns: 1fr 1fr; }
-      .comp-control-card { grid-column: 1 / -1; }
-    }
-    @media (max-width: 520px) {
-      .reservation-grid { grid-template-columns: 1fr; }
+    .res-main { max-width: 1280px; margin: 0 auto; padding: 1.2rem 1.5rem; }
+
+    .res-page-title {
+      font-size: 1.3rem; font-weight: 800; color: #1a1a2e;
+      display: flex; align-items: center; gap: .5rem; margin-bottom: 1.2rem;
     }
 
-    /* ── Computer Control Panel ── */
-    .comp-control-card { background: #fff; border-radius: 8px; border: 1px solid #dde3f0; overflow: hidden; }
-    .comp-control-header {
-      background: #1e3a6e;
-      color: #fff;
-      font-weight: 600;
-      font-size: 0.93rem;
-      padding: 0.65rem 1rem;
-      text-align: center;
+    /* ── PC Map Card ── */
+    .pcmap-card {
+      background: #fff; border: 1px solid #dde3f0;
+      border-radius: 12px; overflow: hidden; margin-bottom: 1.4rem;
+      box-shadow: 0 2px 12px rgba(46,64,153,.08);
     }
-    .comp-control-body { background: #fff; padding: 0.9rem; }
-    .comp-field-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.65rem;
-      font-size: 0.88rem;
+    .pcmap-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .75rem 1.1rem; flex-wrap: wrap; gap: .6rem;
     }
-    .comp-field-row label { font-weight: 500; min-width: 30px; }
-    .comp-field-row input {
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      padding: 0.25rem 0.5rem;
-      width: 70px;
-      font-family: inherit;
-      font-size: 0.85rem;
+    .pcmap-title {
+      font-size: .95rem; font-weight: 700; color: #1a1a2e;
+      display: flex; align-items: center; gap: .4rem;
     }
-    .comp-filter-btn {
-      width: 100%;
-      background: #1e3a6e;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      padding: 0.4rem;
-      font-size: 0.88rem;
-      cursor: pointer;
-      margin-bottom: 0.8rem;
-      font-family: inherit;
-    }
-    .comp-filter-btn:hover { background: #2547a0; }
-    .comp-legend { display: flex; gap: 0.7rem; flex-wrap: wrap; }
-    .comp-legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-size: 0.8rem;
-      font-weight: 500;
-      padding: 0.2rem 0.55rem;
-      border-radius: 4px;
-      color: #fff;
-    }
-    .comp-legend-item.avail { background: #22c55e; }
-    .comp-legend-item.used  { background: #ef4444; }
+    .pcmap-controls { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
 
-    /* ── Request / Log panels ── */
-    .res-panel-card {
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid #dde3f0;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+    .lab-tab {
+      padding: .32rem .8rem; border-radius: 6px; font-size: .78rem;
+      font-weight: 600; border: 1.5px solid #d0d4e8; color: #6b7280;
+      cursor: pointer; background: transparent; font-family: inherit;
+      transition: all .15s;
     }
-    .res-panel-header {
-      background: #1e3a6e;
-      color: #fff;
-      font-weight: 600;
-      font-size: 0.93rem;
-      padding: 0.65rem 1rem;
-      text-align: center;
-      flex-shrink: 0;
+    .lab-tab:hover { border-color: #2E4099; color: #2E4099; }
+    .lab-tab.active { background: #2E4099; border-color: #2E4099; color: #fff; }
+
+    .pcmap-date {
+      background: #fff; border: 1px solid #d0d4e8; color: #1a1a2e;
+      padding: .3rem .6rem; border-radius: 6px; font-family: inherit;
+      font-size: .8rem; outline: none;
     }
-    .res-panel-body {
-      padding: 0.75rem;
-      max-height: 520px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
+    .pcmap-date:focus { border-color: #2E4099; }
+    .pcmap-refresh {
+      background: #fff; border: 1px solid #d0d4e8; color: #6b7280;
+      padding: .3rem .5rem; border-radius: 6px; cursor: pointer; font-size: .85rem;
+      transition: all .15s;
+    }
+    .pcmap-refresh:hover { border-color: #2E4099; color: #2E4099; }
+
+    /* Legend */
+    .pcmap-legend {
+      display: flex; gap: .9rem; padding: .2rem 1.1rem .5rem; flex-wrap: wrap;
+    }
+    .legend-dot {
+      display: flex; align-items: center; gap: .3rem;
+      font-size: .72rem; font-weight: 500; color: #6b7280;
+    }
+    .legend-dot::before {
+      content: ''; width: 8px; height: 8px; border-radius: 50%;
+    }
+    .legend-dot.avail::before  { background: #22c55e; }
+    .legend-dot.occup::before  { background: #ef4444; }
+    .legend-dot.reserv::before { background: #f59e0b; }
+    .legend-dot.pend::before   { background: #a855f7; }
+
+    /* Instructor desk */
+    .instructor-desk {
+      margin: 0 1.1rem .6rem; padding: .45rem;
+      background: linear-gradient(90deg, #1e3a6e, #2547a0);
+      border-radius: 6px; text-align: center;
+      color: rgba(255,255,255,0.85); font-size: .8rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; gap: .4rem;
     }
 
-    /* ── Individual request card ── */
-    .res-request-item {
-      border: 1px solid #e5e7eb;
-      border-radius: 6px;
-      padding: 0.7rem 0.85rem;
-      font-size: 0.84rem;
-      background: #fafafa;
+    /* PC Grid */
+    .pc-grid {
+      display: grid; grid-template-columns: repeat(8, 1fr);
+      gap: 8px; padding: .6rem 1.1rem 1.1rem;
     }
-    .res-request-item .res-field { margin-bottom: 0.22rem; color: #333; }
-    .res-request-item .res-field strong { color: #1e3a6e; }
-    .res-actions { display: flex; gap: 0.5rem; margin-top: 0.55rem; }
-    .btn-accept {
-      background: #22c55e; color: #fff; border: none; border-radius: 4px;
-      padding: 0.25rem 0.85rem; font-size: 0.8rem; cursor: pointer; font-family: inherit;
-    }
-    .btn-accept:hover { background: #16a34a; }
-    .btn-deny {
-      background: #ef4444; color: #fff; border: none; border-radius: 4px;
-      padding: 0.25rem 0.85rem; font-size: 0.8rem; cursor: pointer; font-family: inherit;
-    }
-    .btn-deny:hover { background: #b91c1c; }
+    @media (max-width: 800px) { .pc-grid { grid-template-columns: repeat(4, 1fr); } }
 
-    /* ── Log item ── */
-    .res-log-item {
-      border-bottom: 1px solid #eee;
-      padding-bottom: 0.6rem;
-      font-size: 0.83rem;
-      color: #444;
+    .pc-slot {
+      background: #ecfdf5; border: 1.5px solid #22c55e;
+      border-radius: 8px; padding: .55rem .3rem;
+      text-align: center; cursor: default;
+      transition: all .15s; position: relative;
     }
-    .res-log-item:last-child { border-bottom: none; }
-    .res-log-item div { margin-bottom: 0.12rem; }
-    .status-pending  { color: #f59e0b; font-weight: 600; }
+    .pc-slot .pc-icon { font-size: 1.3rem; margin-bottom: .15rem; }
+    .pc-slot .pc-num {
+      font-size: .68rem; font-weight: 700; color: #6b7280;
+      position: absolute; top: 3px; right: 5px; opacity: .7;
+    }
+    .pc-slot .pc-label {
+      font-size: .68rem; font-weight: 600; color: #22c55e;
+    }
+
+    .pc-slot.available { border-color: #22c55e; background: #ecfdf5; }
+    .pc-slot.available .pc-icon { color: #22c55e; }
+    .pc-slot.available .pc-label { color: #22c55e; }
+
+    .pc-slot.occupied { border-color: #ef4444; background: #fef2f2; }
+    .pc-slot.occupied .pc-icon { color: #ef4444; }
+    .pc-slot.occupied .pc-label { color: #ef4444; }
+
+    .pc-slot.reserved { border-color: #f59e0b; background: #fffbeb; }
+    .pc-slot.reserved .pc-icon { color: #f59e0b; }
+    .pc-slot.reserved .pc-label { color: #f59e0b; }
+
+    .pc-slot.pending { border-color: #a855f7; background: #f5f3ff; }
+    .pc-slot.pending .pc-icon { color: #a855f7; }
+    .pc-slot.pending .pc-label { color: #a855f7; }
+
+    /* Summary pills */
+    .pcmap-summary {
+      display: flex; gap: .6rem; padding: .6rem 1.1rem .9rem; flex-wrap: wrap;
+    }
+    .summary-pill {
+      display: flex; align-items: center; gap: .3rem;
+      font-size: .75rem; font-weight: 600; padding: .22rem .7rem;
+      border-radius: 15px; border: 1px solid;
+    }
+    .summary-pill.avail  { color: #16a34a; border-color: #22c55e55; background: #dcfce7; }
+    .summary-pill.occup  { color: #dc2626; border-color: #ef444455; background: #fee2e2; }
+    .summary-pill.reserv { color: #d97706; border-color: #f59e0b55; background: #fef3c7; }
+
+    /* ── Requests Table ── */
+    .req-card {
+      background: #fff; border: 1px solid #dde3f0;
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 2px 12px rgba(46,64,153,.08);
+    }
+    .req-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .75rem 1.1rem; flex-wrap: wrap; gap: .5rem;
+    }
+    .req-title {
+      font-size: .95rem; font-weight: 700; color: #1a1a2e;
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .req-search {
+      background: #fff; border: 1px solid #d0d4e8; color: #1a1a2e;
+      padding: .32rem .7rem; border-radius: 6px; font-family: inherit;
+      font-size: .8rem; outline: none; width: 180px;
+    }
+    .req-search:focus { border-color: #2E4099; }
+    .req-search::placeholder { color: #b0b5cc; }
+
+    .req-table-wrap { overflow-x: auto; }
+    .req-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    .req-table thead tr { background: #f4f6fb; }
+    .req-table th {
+      padding: .6rem .85rem; text-align: left; font-weight: 600;
+      color: #374151; border-bottom: 2px solid #e5e7eb; white-space: nowrap; font-size: .78rem;
+    }
+    .req-table td {
+      padding: .55rem .85rem; color: #333;
+      border-bottom: 1px solid #f0f2f8;
+    }
+    .req-table tr:hover td { background: #f8faff; }
+    .req-table .lab-badge {
+      background: #eef1ff; color: #2E4099; padding: .15rem .5rem;
+      border-radius: 4px; font-size: .72rem; font-weight: 700;
+    }
     .status-accepted { color: #22c55e; font-weight: 600; }
     .status-denied   { color: #ef4444; font-weight: 600; }
-    .no-items { color: #aaa; font-size: 0.85rem; text-align: center; padding: 1.2rem 0; }
+    .status-pending  { color: #f59e0b; font-weight: 600; }
+    .action-text { color: #9ca3af; font-size: .78rem; }
+
+    .btn-accept-sm {
+      background: #22c55e; color: #fff; border: none; border-radius: 4px;
+      padding: .2rem .6rem; font-size: .75rem; cursor: pointer; font-family: inherit; font-weight: 600;
+    }
+    .btn-accept-sm:hover { background: #16a34a; }
+    .btn-deny-sm {
+      background: #ef4444; color: #fff; border: none; border-radius: 4px;
+      padding: .2rem .6rem; font-size: .75rem; cursor: pointer; font-family: inherit; font-weight: 600;
+    }
+    .btn-deny-sm:hover { background: #b91c1c; }
+
+    .no-data { text-align: center; color: #aaa; padding: 1.5rem; font-size: .85rem; }
   </style>
 </head>
-<body class="admin-body">
 
+<body class="admin-body">
   <nav class="navbar admin-navbar">
     <div class="admin-nav-brand">
       <img src="CCS.png" alt="CCS" class="admin-logo" onerror="this.style.display='none'"/>
@@ -156,56 +198,72 @@
       <li><a href="#" onclick="openModal('searchModal');return false;">Search</a></li>
       <li><a href="admin_students.html">Students</a></li>
       <li><a href="admin_sitin.html">Sit-in</a></li>
-      <li><a href="admin_sitin_records.html">View Sit-in Records</a></li>
+      <li><a href="admin_sitin_records.html">Sit-in Records</a></li>
       <li><a href="admin_reports.html">Sit-in Reports</a></li>
       <li><a href="admin_feedback.html">Feedback Reports</a></li>
       <li><a href="admin_reservation.html" class="active">Reservation</a></li>
       <li><a href="admin_leaderboard.html">Leaderboard</a></li>
       <li><a href="admin_analytics.html">Analytics</a></li>
-      <li><a href="admin_rewards.html">Add Reward/Points</a></li>
+      <li><a href="admin_rewards.html">Rewards</a></li>
+      <li><a href="admin_software.html">Software</a></li>
       <li><a href="#" class="btn-logout-nav" onclick="adminLogout();return false;">Log out</a></li>
     </ul>
     <button class="hamburger" id="hamburger">&#9776;</button>
   </nav>
 
-  <div class="admin-main">
-    <h2 class="admin-page-title">Reservation</h2>
+  <div class="res-main">
+    <div class="res-page-title">&#128197; Reservation Management</div>
 
-    <div class="reservation-grid">
-
-      <!-- LEFT: Computer Control -->
-      <div class="comp-control-card">
-        <div class="comp-control-header">Computer Control</div>
-        <div class="comp-control-body">
-          <div class="comp-field-row">
-            <label>Lab</label>
-            <input type="text" id="labFilter" value="524" placeholder="e.g. 524"/>
-          </div>
-          <button class="comp-filter-btn" onclick="filterByLab()">Filter</button>
-          <div class="comp-legend">
-            <div class="comp-legend-item avail">Available</div>
-            <div class="comp-legend-item used">Used</div>
-          </div>
-          <div id="compGrid" style="margin-top:0.9rem;display:flex;flex-wrap:wrap;gap:6px;"></div>
+    <!-- ── Live Lab PC Map ── -->
+    <div class="pcmap-card">
+      <div class="pcmap-header">
+        <div class="pcmap-title">&#128421; Live Lab PC Map</div>
+        <div class="pcmap-controls">
+          <button class="lab-tab active" data-lab="524" onclick="switchLab('524',this)">Lab 524</button>
+          <button class="lab-tab" data-lab="526" onclick="switchLab('526',this)">Lab 526</button>
+          <button class="lab-tab" data-lab="528" onclick="switchLab('528',this)">Lab 528</button>
+          <button class="lab-tab" data-lab="530" onclick="switchLab('530',this)">Lab 530</button>
+          <input type="date" class="pcmap-date" id="mapDate"/>
+          <button class="pcmap-refresh" onclick="renderPCMap()" title="Refresh">&#x21bb;</button>
         </div>
       </div>
-
-      <!-- MIDDLE: Reservation Requests -->
-      <div class="res-panel-card">
-        <div class="res-panel-header">Reservation Request</div>
-        <div class="res-panel-body" id="requestList">
-          <div class="no-items">No pending reservation requests.</div>
-        </div>
+      <div class="pcmap-legend">
+        <span class="legend-dot avail">Available</span>
+        <span class="legend-dot occup">Occupied (Sit-in)</span>
+        <span class="legend-dot reserv">Reserved (Approved)</span>
+        <span class="legend-dot pend">Pending Approval</span>
       </div>
+      <div class="instructor-desk">&#128218; INSTRUCTOR'S DESK</div>
+      <div class="pc-grid" id="pcGrid"></div>
+      <div class="pcmap-summary" id="pcSummary"></div>
+    </div>
 
-      <!-- RIGHT: Logs -->
-      <div class="res-panel-card">
-        <div class="res-panel-header">Logs</div>
-        <div class="res-panel-body" id="logList">
-          <div class="no-items">No reservation logs yet.</div>
-        </div>
+    <!-- ── Reservation Requests Table ── -->
+    <div class="req-card">
+      <div class="req-header">
+        <div class="req-title">&#128203; Reservation Requests</div>
+        <input class="req-search" type="text" id="reqSearch" placeholder="&#128269; Search" oninput="renderTable()"/>
       </div>
-
+      <div class="req-table-wrap">
+        <table class="req-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>STUDENT</th>
+              <th>LAB</th>
+              <th>PC</th>
+              <th>DATE</th>
+              <th>TIME</th>
+              <th>PURPOSE</th>
+              <th>STATUS</th>
+              <th>ACTION</th>
+            </tr>
+          </thead>
+          <tbody id="reqBody">
+            <tr><td colspan="9" class="no-data">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -229,8 +287,10 @@
   <script>
     requireAdmin();
 
+    let _currentLab = '524';
+    const TOTAL_PCS = 40;
+
     initDB().then(() => {
-      // Ensure reservations table exists
       db.run(`CREATE TABLE IF NOT EXISTS reservations (
         id              INTEGER PRIMARY KEY AUTOINCREMENT,
         id_number       TEXT NOT NULL,
@@ -243,110 +303,129 @@
         created_at      TEXT DEFAULT (datetime('now'))
       )`);
       saveDB();
-      renderRequests();
-      renderLogs();
-      renderCompGrid();
+      document.getElementById('mapDate').value = new Date().toISOString().split('T')[0];
+      renderPCMap();
+      renderTable();
     });
 
-    function fmtDateNice(dt) {
-      if (!dt) return '—';
+    function switchLab(lab, btn) {
+      _currentLab = lab;
+      document.querySelectorAll('.lab-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderPCMap();
+    }
+
+    // ── PC Map ────────────────────────────────────────────
+    function renderPCMap() {
+      const lab = _currentLab;
+      const date = document.getElementById('mapDate').value;
+
+      // Get occupied PCs (active sit-ins)
+      let occupiedSet = new Set();
       try {
-        const d = new Date(dt.replace(' ','T') + (dt.includes('T') ? '' : 'Z'));
-        return isNaN(d) ? dt : d.toLocaleDateString();
-      } catch(e) { return dt; }
+        const occ = db.exec(`SELECT DISTINCT computer_num FROM sitins WHERE lab=? AND status='Active'`, [lab]);
+        if (occ.length && occ[0].values.length) occ[0].values.forEach(v => occupiedSet.add(v[0]));
+      } catch(e){}
+
+      // Get reserved PCs (approved)
+      let reservedSet = new Set();
+      try {
+        const res = db.exec(`SELECT DISTINCT computer_num FROM reservations WHERE lab=? AND status='Accepted' AND res_date=?`, [lab, date]);
+        if (res.length && res[0].values.length) res[0].values.forEach(v => reservedSet.add(v[0]));
+      } catch(e){}
+
+      // Get pending PCs
+      let pendingSet = new Set();
+      try {
+        const pen = db.exec(`SELECT DISTINCT computer_num FROM reservations WHERE lab=? AND status='Pending' AND res_date=?`, [lab, date]);
+        if (pen.length && pen[0].values.length) pen[0].values.forEach(v => pendingSet.add(v[0]));
+      } catch(e){}
+
+      const grid = document.getElementById('pcGrid');
+      let availCount = 0, occCount = 0, resCount = 0;
+
+      grid.innerHTML = Array.from({length: TOTAL_PCS}, (_, i) => i + 1).map(n => {
+        let cls = 'available', label = 'Available', icon = '🖥️';
+        if (occupiedSet.has(n)) { cls = 'occupied'; label = 'Occupied'; occCount++; }
+        else if (reservedSet.has(n)) { cls = 'reserved'; label = 'Reserved'; icon = '📋'; resCount++; }
+        else if (pendingSet.has(n)) { cls = 'pending'; label = 'Pending'; icon = '⏳'; }
+        else { availCount++; }
+        return `<div class="pc-slot ${cls}">
+          <div class="pc-num">PC${n}</div>
+          <div class="pc-icon">${icon}</div>
+          <div class="pc-label">${label}</div>
+        </div>`;
+      }).join('');
+
+      document.getElementById('pcSummary').innerHTML = `
+        <span class="summary-pill avail">● ${availCount} Available</span>
+        <span class="summary-pill occup">● ${occCount} Occupied</span>
+        <span class="summary-pill reserv">● ${resCount} Reserved</span>
+      `;
     }
 
-    // ── Render Requests (Pending only) ───────────────────────
-    function renderRequests() {
-      const r = db.exec(`SELECT * FROM reservations WHERE status='Pending' ORDER BY id DESC`);
-      const list = document.getElementById('requestList');
+    // ── Requests Table ────────────────────────────────────
+    function renderTable() {
+      const q = (document.getElementById('reqSearch').value || '').toLowerCase();
+      const r = db.exec(`SELECT r.id, r.id_number, s.firstname, s.lastname, r.lab, r.computer_num, r.res_date, r.res_time, r.purpose, r.status
+        FROM reservations r LEFT JOIN students s ON r.id_number=s.id_number ORDER BY r.id DESC`);
+      const tbody = document.getElementById('reqBody');
+
       if (!r.length || !r[0].values.length) {
-        list.innerHTML = '<div class="no-items">No pending reservation requests.</div>';
+        tbody.innerHTML = '<tr><td colspan="9" class="no-data">No reservation requests yet.</td></tr>';
         return;
       }
-      const rows = r[0].values.map((_,i) => rowToObj(r[0], i));
-      list.innerHTML = rows.map(row => `
-        <div class="res-request-item">
-          <div class="res-field"><strong>ID Number:</strong> ${row.id_number}</div>
-          <div class="res-field"><strong>Reservation Date:</strong> ${row.res_date}</div>
-          <div class="res-field"><strong>Reservation Time:</strong> ${row.res_time}</div>
-          <div class="res-field"><strong>Laboratory:</strong> ${row.lab}</div>
-          <div class="res-field"><strong>Computer Number:</strong> ${row.computer_num}</div>
-          <div class="res-field"><strong>Purpose:</strong> ${row.purpose}</div>
-          <div class="res-actions">
-            <button class="btn-accept" onclick="updateReservation(${row.id},'Accepted')">Accept</button>
-            <button class="btn-deny"   onclick="updateReservation(${row.id},'Denied')">Deny</button>
-          </div>
-        </div>`).join('');
-    }
 
-    // ── Render Logs (all) ────────────────────────────────────
-    function renderLogs() {
-      const r = db.exec(`SELECT * FROM reservations ORDER BY id DESC`);
-      const list = document.getElementById('logList');
-      if (!r.length || !r[0].values.length) {
-        list.innerHTML = '<div class="no-items">No reservation logs yet.</div>';
+      let rows = r[0].values.map(v => ({
+        id: v[0], id_number: v[1], name: `${v[2]||''} ${v[3]||''}`.trim() || v[1],
+        lab: v[4], pc: v[5], date: v[6], time: v[7], purpose: v[8], status: v[9]
+      }));
+
+      if (q) {
+        rows = rows.filter(r => r.name.toLowerCase().includes(q) || r.id_number.toLowerCase().includes(q)
+          || r.purpose.toLowerCase().includes(q) || r.lab.includes(q));
+      }
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="no-data">No matching results.</td></tr>';
         return;
       }
-      const rows = r[0].values.map((_,i) => rowToObj(r[0], i));
-      list.innerHTML = rows.map(row => `
-        <div class="res-log-item">
-          <div><strong>ID Number:</strong> ${row.id_number}</div>
-          <div><strong>Reservation Date:</strong> ${row.res_date}</div>
-          <div><strong>Reservation Time:</strong> ${row.res_time}</div>
-          <div><strong>Laboratory:</strong> ${row.lab}</div>
-          <div><strong>Computer Number:</strong> ${row.computer_num}</div>
-          <div><strong>Purpose:</strong> ${row.purpose}</div>
-          <div><strong>Status:</strong>
-            <span class="status-${row.status.toLowerCase()}">${row.status}</span>
-          </div>
-        </div>`).join('');
+
+      tbody.innerHTML = rows.map((row, i) => `
+        <tr>
+          <td>${rows.length - i}</td>
+          <td><strong>${row.name}</strong><br><span style="color:#6b7280;font-size:.72rem;">${row.id_number}</span></td>
+          <td><span class="lab-badge">${row.lab}</span></td>
+          <td>${row.pc}</td>
+          <td>${row.date}</td>
+          <td>${row.time}</td>
+          <td>${row.purpose}</td>
+          <td><span class="status-${row.status.toLowerCase()}">${row.status}</span></td>
+          <td>${row.status === 'Pending'
+            ? `<button class="btn-accept-sm" onclick="updateRes(${row.id},'Accepted')">Accept</button>
+               <button class="btn-deny-sm" onclick="updateRes(${row.id},'Denied')">Deny</button>`
+            : `<span class="action-text">${row.status}</span>`
+          }</td>
+        </tr>`).join('');
     }
 
-    // ── Accept / Deny ────────────────────────────────────────
-    function updateReservation(id, status) {
+    function updateRes(id, status) {
       db.run('UPDATE reservations SET status=? WHERE id=?', [status, id]);
       saveDB();
-      renderRequests();
-      renderLogs();
-      renderCompGrid();
+      renderTable();
+      renderPCMap();
       showToast(`Reservation ${status.toLowerCase()}.`, status === 'Accepted' ? 'success' : 'error');
     }
 
-    // ── Computer Grid ────────────────────────────────────────
-    function renderCompGrid() {
-      const lab = document.getElementById('labFilter').value.trim() || '524';
-      // Find which computer numbers are accepted for this lab
-      const r = db.exec(
-        `SELECT computer_num FROM reservations WHERE lab=? AND status='Accepted'`, [lab]
-      );
-      const used = new Set(
-        r.length && r[0].values.length ? r[0].values.map(v => v[0]) : []
-      );
-      const grid = document.getElementById('compGrid');
-      // Show 20 computer slots
-      grid.innerHTML = Array.from({length:20}, (_,i) => i+1).map(n => {
-        const isUsed = used.has(n);
-        return `<div title="PC ${n}" style="
-          width:36px;height:36px;border-radius:5px;display:flex;align-items:center;
-          justify-content:center;font-size:0.72rem;font-weight:600;color:#fff;
-          background:${isUsed ? '#ef4444' : '#22c55e'};cursor:default;">
-          ${n}
-        </div>`;
-      }).join('');
-    }
-
-    function filterByLab() { renderCompGrid(); }
-
     function doSearch() {
       const q = val('searchInput');
-      if (!q) { document.getElementById('searchResults').innerHTML=''; return; }
+      if (!q) { document.getElementById('searchResults').innerHTML = ''; return; }
       const r = db.exec(
         `SELECT id_number,firstname,lastname FROM students WHERE id_number LIKE ? OR firstname LIKE ? OR lastname LIKE ?`,
-        [`%${q}%`,`%${q}%`,`%${q}%`]
+        [`%${q}%`, `%${q}%`, `%${q}%`]
       );
       const el = document.getElementById('searchResults');
-      if (!r.length||!r[0].values.length) { el.innerHTML='<p style="color:#888;font-size:0.88rem;">No students found.</p>'; return; }
+      if (!r.length || !r[0].values.length) { el.innerHTML = '<p style="color:#888;font-size:0.88rem;">No students found.</p>'; return; }
       el.innerHTML = r[0].values.map(row =>
         `<div class="search-result-row"><strong>${row[0]}</strong> — ${row[1]} ${row[2]}</div>`).join('');
     }

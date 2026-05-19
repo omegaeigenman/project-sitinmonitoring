@@ -3,178 +3,293 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reserve a Computer — CCS</title>
+  <title>Lab Reservation — CCS</title>
   <link rel="stylesheet" href="style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     body { background: #f4f6fb; }
 
-    .res-wrap {
-      max-width: 540px;
-      margin: 2rem auto;
-      padding: 0 1rem;
+    .res-page-wrap { max-width: 1200px; margin: 0 auto; padding: 1.4rem 1.2rem 2rem; }
+
+    .res-page-title {
+      font-size: 1.35rem; font-weight: 800; color: #1a1a2e;
+      margin-bottom: 1.2rem; display: flex; align-items: center; gap: .5rem;
     }
 
-    .res-card {
-      background: #fff;
-      border-radius: 10px;
-      border: 1px solid #dde3f0;
-      box-shadow: 0 2px 12px rgba(46,64,153,0.09);
-      overflow: hidden;
+    /* ── Two-column layout ── */
+    .res-layout { display: grid; grid-template-columns: 1fr 340px; gap: 1.2rem; align-items: start; }
+    @media (max-width: 900px) { .res-layout { grid-template-columns: 1fr; } }
+
+    /* ── Form Card ── */
+    .res-form-card {
+      background: #fff; border-radius: 12px; border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46,64,153,.08); overflow: hidden;
     }
-
-    .res-card-header {
-      background: #1e3a6e;
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 700;
-      padding: 0.85rem 1.2rem;
-      text-align: center;
+    .res-form-head {
+      background: linear-gradient(90deg, #1e3a6e, #2547a0);
+      color: #fff; padding: .75rem 1.1rem; font-weight: 700; font-size: .92rem;
+      display: flex; align-items: center; gap: .4rem;
     }
+    .res-form-body { padding: 1.2rem; }
 
-    .res-card-body { padding: 1.3rem 1.4rem; }
-
-    .field-group {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
+    /* Form fields */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: .75rem; }
+    .form-row.full { grid-template-columns: 1fr; }
+    .form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+    @media (max-width: 600px) {
+      .form-row, .form-row.triple { grid-template-columns: 1fr; }
     }
-    @media (max-width: 480px) { .field-group { grid-template-columns: 1fr; } }
-
-    .field-label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #1a1a2e;
-      margin-bottom: 0.3rem;
-    }
-
-    .field-input {
-      width: 100%;
-      border: 1.5px solid #d0d4e8;
-      border-radius: 6px;
-      padding: 0.48rem 0.75rem;
-      font-family: inherit;
-      font-size: 0.88rem;
-      outline: none;
-      box-sizing: border-box;
+    .f-label { font-size: .8rem; font-weight: 600; color: #374151; margin-bottom: .3rem; }
+    .f-label .req { color: #ef4444; }
+    .f-input {
+      width: 100%; border: 1.5px solid #d0d4e8; border-radius: 7px;
+      padding: .5rem .75rem; font-family: inherit; font-size: .88rem;
+      background: #fff; color: #1a1a2e; outline: none; box-sizing: border-box;
       transition: border-color .15s;
     }
-    .field-input:focus { border-color: #1e3a6e; }
+    .f-input:focus { border-color: #2E4099; box-shadow: 0 0 0 3px rgba(46,64,153,.1); }
+    .f-input:disabled { background: #f0f2f8; color: #6b7280; }
 
-    .full { grid-column: 1 / -1; }
+    /* ── PC Map inside form ── */
+    .pc-select-title {
+      font-size: .85rem; font-weight: 700; color: #1a1a2e;
+      margin: .8rem 0 .5rem; display: flex; align-items: center; gap: .4rem;
+    }
+    .pc-legend {
+      display: flex; gap: .7rem; margin-bottom: .5rem; flex-wrap: wrap;
+    }
+    .pc-legend-item {
+      display: flex; align-items: center; gap: .25rem;
+      font-size: .7rem; font-weight: 600;
+    }
+    .pc-legend-item::before { content: ''; width: 10px; height: 10px; border-radius: 3px; }
+    .pc-legend-item.avail::before  { background: #22c55e; }
+    .pc-legend-item.occup::before  { background: #ef4444; }
+    .pc-legend-item.reserv::before { background: #f59e0b; }
+    .pc-legend-item.pend::before   { background: #a855f7; }
+    .pc-legend-item.sel::before    { background: #2563eb; }
 
-    .submit-btn {
-      width: 100%;
-      background: #1e3a6e;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 0.58rem;
-      font-size: 0.95rem;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      margin-top: 0.4rem;
-      transition: background .15s;
+    .instructor-desk-sm {
+      background: linear-gradient(90deg, #1e3a6e, #2547a0);
+      color: rgba(255,255,255,0.85); border-radius: 6px;
+      padding: .35rem; text-align: center; font-size: .72rem;
+      font-weight: 700; margin-bottom: .5rem;
+      display: flex; align-items: center; justify-content: center; gap: .3rem;
     }
-    .submit-btn:hover { background: #2547a0; }
 
-    .back-link {
-      display: block;
-      text-align: center;
-      margin-top: 1rem;
-      font-size: 0.88rem;
-      color: #2547a0;
-      text-decoration: none;
+    .pc-grid-sm {
+      display: grid; grid-template-columns: repeat(8, 1fr);
+      gap: 6px; margin-bottom: .6rem;
     }
-    .back-link:hover { text-decoration: underline; }
+    @media (max-width: 600px) { .pc-grid-sm { grid-template-columns: repeat(5, 1fr); } }
 
-    /* History list */
-    .history-section { margin-top: 1.8rem; }
-    .history-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #1a1a2e;
-      margin-bottom: 0.7rem;
+    .pc-cell {
+      background: #ecfdf5; border: 2px solid #22c55e;
+      border-radius: 6px; padding: .35rem .15rem; text-align: center;
+      cursor: pointer; transition: all .15s;
     }
-    .history-item {
-      background: #fff;
-      border: 1px solid #dde3f0;
-      border-radius: 8px;
-      padding: 0.7rem 1rem;
-      margin-bottom: 0.6rem;
-      font-size: 0.86rem;
-      color: #333;
+    .pc-cell .pc-icon-sm { font-size: 1rem; }
+    .pc-cell .pc-num-sm { font-size: .6rem; font-weight: 700; color: #374151; }
+    .pc-cell:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+
+    .pc-cell.available { background: #ecfdf5; border-color: #22c55e; }
+    .pc-cell.occupied  { background: #fef2f2; border-color: #ef4444; cursor: not-allowed; opacity: .6; }
+    .pc-cell.reserved  { background: #fffbeb; border-color: #f59e0b; cursor: not-allowed; opacity: .6; }
+    .pc-cell.pending   { background: #f5f3ff; border-color: #a855f7; cursor: not-allowed; opacity: .6; }
+    .pc-cell.selected  { background: #dbeafe; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.25); }
+    .pc-cell.occupied .pc-icon-sm  { color: #ef4444; }
+    .pc-cell.reserved .pc-icon-sm  { color: #f59e0b; }
+    .pc-cell.selected .pc-icon-sm  { color: #2563eb; }
+
+    .pc-legend-summary {
+      display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: .6rem;
     }
-    .history-item .h-field { margin-bottom: 0.15rem; }
-    .history-item .h-field strong { color: #1e3a6e; }
-    .status-pending  { color: #f59e0b; font-weight: 600; }
-    .status-accepted { color: #22c55e; font-weight: 600; }
-    .status-denied   { color: #ef4444; font-weight: 600; }
+    .pc-sum-pill {
+      font-size: .7rem; font-weight: 600; padding: .15rem .5rem;
+      border-radius: 10px; border: 1px solid;
+    }
+    .pc-sum-pill.avail  { color: #22c55e; border-color: #22c55e55; background: #22c55e11; }
+    .pc-sum-pill.occup  { color: #ef4444; border-color: #ef444455; background: #ef444411; }
+    .pc-sum-pill.reserv { color: #f59e0b; border-color: #f59e0b55; background: #f59e0b11; }
+
+    /* Submit button */
+    .submit-res-btn {
+      width: 100%; padding: .65rem; border: none; border-radius: 8px;
+      background: linear-gradient(90deg, #f59e0b, #f97316);
+      color: #fff; font-family: inherit; font-size: .95rem; font-weight: 800;
+      cursor: pointer; transition: opacity .15s; margin-top: .6rem;
+      display: flex; align-items: center; justify-content: center; gap: .4rem;
+      text-transform: uppercase; letter-spacing: .05em;
+    }
+    .submit-res-btn:hover { opacity: .88; }
+
+    /* ── Right sidebar ── */
+    .sidebar-card {
+      background: #fff; border-radius: 12px; border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46,64,153,.08); overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .sidebar-head {
+      background: linear-gradient(90deg, #1e3a6e, #2547a0);
+      color: #fff; padding: .65rem 1rem; font-weight: 700; font-size: .88rem;
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .sidebar-body { padding: .9rem 1rem; }
+
+    /* Guidelines */
+    .guideline-item {
+      display: flex; gap: .5rem; margin-bottom: .7rem; font-size: .82rem; color: #374151; line-height: 1.55;
+    }
+    .guideline-icon { font-size: 1rem; flex-shrink: 0; margin-top: .1rem; }
+    .guideline-item strong { color: #1e3a6e; }
+    .guideline-item .highlight { color: #ef4444; font-weight: 700; }
+
+    /* My Reservations */
+    .my-res-item {
+      border-bottom: 1px solid #f0f2f8; padding: .6rem 0;
+    }
+    .my-res-item:last-child { border-bottom: none; }
+    .my-res-title {
+      font-size: .85rem; font-weight: 700; color: #1a1a2e; margin-bottom: .2rem;
+    }
+    .my-res-meta { font-size: .72rem; color: #6b7280; margin-bottom: .15rem; }
+    .my-res-meta .purpose-tag { color: #374151; font-weight: 600; }
+    .my-res-status {
+      display: inline-block; padding: .1rem .45rem; border-radius: 8px;
+      font-size: .68rem; font-weight: 700;
+    }
+    .my-res-status.accepted { background: #dcfce7; color: #16a34a; }
+    .my-res-status.pending  { background: #fef3c7; color: #d97706; }
+    .my-res-status.denied   { background: #fee2e2; color: #dc2626; }
+    .no-res { text-align: center; color: #aaa; font-size: .85rem; padding: 1rem; }
   </style>
 </head>
 <body>
 
   <nav class="navbar dash-navbar">
-    <span class="dash-brand">&#127979; CCS Dashboard</span>
+    <div class="dash-brand" style="display:flex;align-items:center;gap:0.5rem;">
+      <img src="CCS.png" alt="CCS" style="width:30px;height:30px;object-fit:contain;border-radius:50%;border:1.5px solid rgba(245,168,0,0.5);" onerror="this.style.display='none'"/>
+      <span>College of Computer Studies Sit-in Monitoring System</span>
+    </div>
     <ul class="nav-links" id="navLinks">
+      <li><a href="student_notifications.html">Notifications</a></li>
       <li><a href="dashboard.html">Home</a></li>
       <li><a href="student_session.html">My Sessions</a></li>
-      <li><a href="student_history.html">History &amp; Feedback</a></li>
-      <li><a href="student_reservation.html" class="active">Reservation</a></li>
-      <li><a href="student_notifications.html">Notifications</a></li>
       <li><a href="edit_profile.html">Edit Profile</a></li>
+      <li><a href="student_history.html">History</a></li>
+      <li><a href="student_reservation.html" class="active">Reservation</a></li>
+      <li><a href="student_leaderboard.html">Leaderboard</a></li>
+      <li><a href="student_summary.html">My Summary</a></li>
+      <li><a href="student_labstatus.html">Lab Status</a></li>
       <li><a href="#" class="btn-logout-nav" onclick="handleLogout()">Log out</a></li>
     </ul>
     <button class="hamburger" id="hamburger">&#9776;</button>
   </nav>
 
-  <div class="res-wrap">
-    <div class="res-card">
-      <div class="res-card-header">&#128197; Reserve a Computer</div>
-      <div class="res-card-body">
-        <div class="field-group">
-          <div>
-            <div class="field-label">Lab Room</div>
-            <select class="field-input" id="rLab">
-              <option value="" disabled selected>Select lab</option>
-              <option value="524">Room 524</option>
-              <option value="526">Room 526</option>
-              <option value="530">Room 530</option>
-              <option value="542">Room 542</option>
-              <option value="544">Room 544</option>
-            </select>
-          </div>
-          <div>
-            <div class="field-label">Computer Number</div>
-            <input class="field-input" type="number" id="rComputer" min="1" max="50" placeholder="e.g. 5"/>
-          </div>
-          <div>
-            <div class="field-label">Date</div>
-            <input class="field-input" type="date" id="rDate"/>
-          </div>
-          <div>
-            <div class="field-label">Time</div>
-            <input class="field-input" type="time" id="rTime"/>
-          </div>
-          <div class="full">
-            <div class="field-label">Purpose</div>
-            <select class="field-input" id="rPurpose">
-              <option value="" disabled selected>Select purpose</option>
-            </select>
+  <div class="res-page-wrap">
+    <div class="res-page-title">&#128197; Lab Reservation</div>
+
+    <div class="res-layout">
+      <!-- ── LEFT: Form + PC Map ── -->
+      <div>
+        <div class="res-form-card">
+          <div class="res-form-head">&#128221; New Reservation</div>
+          <div class="res-form-body">
+            <!-- ID & Name (read-only) -->
+            <div class="form-row">
+              <div>
+                <div class="f-label">ID NUMBER</div>
+                <input class="f-input" type="text" id="rIdNum" disabled/>
+              </div>
+              <div>
+                <div class="f-label">STUDENT NAME</div>
+                <input class="f-input" type="text" id="rName" disabled/>
+              </div>
+            </div>
+
+            <!-- Purpose -->
+            <div class="form-row full">
+              <div>
+                <div class="f-label">PURPOSE <span class="req">*</span></div>
+                <select class="f-input" id="rPurpose">
+                  <option value="" disabled selected>Select purpose</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Lab, Date, Time -->
+            <div class="form-row triple">
+              <div>
+                <div class="f-label">LABORATORY <span class="req">*</span></div>
+                <select class="f-input" id="rLab" onchange="renderStudentPCMap()">
+                  <option value="524">524</option>
+                  <option value="526">526</option>
+                  <option value="528">528</option>
+                  <option value="530">530</option>
+                </select>
+              </div>
+              <div>
+                <div class="f-label">DATE <span class="req">*</span></div>
+                <input class="f-input" type="date" id="rDate" onchange="renderStudentPCMap()"/>
+              </div>
+              <div>
+                <div class="f-label">TIME IN <span class="req">*</span></div>
+                <input class="f-input" type="time" id="rTime"/>
+              </div>
+            </div>
+
+            <!-- PC Selection Map -->
+            <div class="pc-select-title">&#128421; Select a PC – click an available (green) PC</div>
+            <div class="pc-legend">
+              <span class="pc-legend-item avail">AVAILABLE</span>
+              <span class="pc-legend-item occup">OCCUPIED</span>
+              <span class="pc-legend-item reserv">RESERVED</span>
+              <span class="pc-legend-item pend">PENDING</span>
+              <span class="pc-legend-item sel">YOUR SELECTION</span>
+            </div>
+            <div class="instructor-desk-sm">&#128218; INSTRUCTOR'S DESK</div>
+            <div class="pc-grid-sm" id="studentPcGrid"></div>
+            <div class="pc-legend-summary" id="studentPcSummary"></div>
+
+            <button class="submit-res-btn" onclick="submitReservation()">&#128197; SUBMIT RESERVATION</button>
           </div>
         </div>
-        <button class="submit-btn" onclick="submitReservation()">Submit Reservation</button>
+      </div>
+
+      <!-- ── RIGHT: Guidelines + My Reservations ── -->
+      <div>
+        <!-- Guidelines -->
+        <div class="sidebar-card">
+          <div class="sidebar-head">&#128214; Guidelines</div>
+          <div class="sidebar-body">
+            <div class="guideline-item">
+              <span class="guideline-icon">⚠️</span>
+              <div><strong>Arrive on time.</strong> Reservation cancelled if not checked in within 15 minutes.</div>
+            </div>
+            <div class="guideline-item">
+              <span class="guideline-icon">📝</span>
+              <div><strong>Each session costs 1 session point.</strong> You have <span class="highlight" id="sessRemaining">--</span> remaining.</div>
+            </div>
+            <div class="guideline-item">
+              <span class="guideline-icon">🖥️</span>
+              <div><strong>Select your preferred PC</strong> from the lab map after choosing a lab and date.</div>
+            </div>
+            <div class="guideline-item">
+              <span class="guideline-icon">🪪</span>
+              <div>Bring your <strong>valid school ID</strong> when claiming your reservation.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- My Reservations -->
+        <div class="sidebar-card">
+          <div class="sidebar-head">&#128203; My Reservations</div>
+          <div class="sidebar-body" id="myResList">
+            <div class="no-res">Loading...</div>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="history-section">
-      <div class="history-title">My Reservations</div>
-      <div id="myReservations"><p style="color:#aaa;font-size:0.88rem;">Loading...</p></div>
-    </div>
-
-    <a href="dashboard.html" class="back-link">&#8592; Back to Dashboard</a>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
@@ -182,6 +297,7 @@
   <script src="script.js"></script>
   <script>
     let currentStudent = null;
+    let _selectedPC = null;
 
     async function init() {
       const sess = sessionGet();
@@ -189,6 +305,10 @@
       await initDB();
       currentStudent = dbGetStudent(sess.id_number);
       if (!currentStudent) { sessionClear(); window.location.href = 'login.html'; return; }
+
+      document.getElementById('rIdNum').value = currentStudent.id_number;
+      document.getElementById('rName').value = `${currentStudent.firstname} ${currentStudent.lastname}`;
+      document.getElementById('sessRemaining').textContent = currentStudent.session_cnt;
 
       // Populate purpose dropdown
       const sel = document.getElementById('rPurpose');
@@ -198,7 +318,6 @@
         sel.appendChild(o);
       });
 
-      // Ensure reservations table exists
       db.run(`CREATE TABLE IF NOT EXISTS reservations (
         id           INTEGER PRIMARY KEY AUTOINCREMENT,
         id_number    TEXT NOT NULL,
@@ -212,67 +331,116 @@
       )`);
       saveDB();
 
-      // Set default date to today
-      const today = new Date();
-      document.getElementById('rDate').value = today.toISOString().split('T')[0];
-
+      document.getElementById('rDate').value = new Date().toISOString().split('T')[0];
+      renderStudentPCMap();
       loadMyReservations();
     }
 
-    function submitReservation() {
-      const lab         = document.getElementById('rLab').value;
-      const computer    = document.getElementById('rComputer').value.trim();
-      const date        = document.getElementById('rDate').value;
-      const time        = document.getElementById('rTime').value;
-      const purpose     = document.getElementById('rPurpose').value;
+    // ── PC Map ────────────────────────────────────────────
+    function renderStudentPCMap() {
+      const lab = document.getElementById('rLab').value;
+      const date = document.getElementById('rDate').value;
+      const TOTAL = 40;
 
-      if (!lab)      { showToast('Please select a lab room.', 'error'); return; }
-      if (!computer) { showToast('Please enter a computer number.', 'error'); return; }
-      if (!date)     { showToast('Please pick a date.', 'error'); return; }
-      if (!time)     { showToast('Please pick a time.', 'error'); return; }
-      if (!purpose)  { showToast('Please select a purpose.', 'error'); return; }
+      let occupiedSet = new Set();
+      try {
+        const occ = db.exec(`SELECT DISTINCT computer_num FROM sitins WHERE lab=? AND status='Active'`, [lab]);
+        if (occ.length && occ[0].values.length) occ[0].values.forEach(v => occupiedSet.add(v[0]));
+      } catch(e){}
+
+      let reservedSet = new Set();
+      try {
+        const res = db.exec(`SELECT DISTINCT computer_num FROM reservations WHERE lab=? AND status='Accepted' AND res_date=?`, [lab, date]);
+        if (res.length && res[0].values.length) res[0].values.forEach(v => reservedSet.add(v[0]));
+      } catch(e){}
+
+      let pendingSet = new Set();
+      try {
+        const pen = db.exec(`SELECT DISTINCT computer_num FROM reservations WHERE lab=? AND status='Pending' AND res_date=?`, [lab, date]);
+        if (pen.length && pen[0].values.length) pen[0].values.forEach(v => pendingSet.add(v[0]));
+      } catch(e){}
+
+      const grid = document.getElementById('studentPcGrid');
+      let availCount = 0, occCount = 0, resCount = 0;
+
+      // Reset selection if it's no longer available
+      if (_selectedPC && (occupiedSet.has(_selectedPC) || reservedSet.has(_selectedPC))) {
+        _selectedPC = null;
+      }
+
+      grid.innerHTML = Array.from({length: TOTAL}, (_, i) => i + 1).map(n => {
+        let cls = 'available', icon = '🖥️';
+        if (occupiedSet.has(n)) { cls = 'occupied'; icon = '🔴'; occCount++; }
+        else if (reservedSet.has(n)) { cls = 'reserved'; icon = '📋'; resCount++; }
+        else if (pendingSet.has(n)) { cls = 'pending'; icon = '⏳'; }
+        else { availCount++; }
+        if (_selectedPC === n) cls = 'selected';
+        const clickable = cls === 'available' || cls === 'selected';
+        return `<div class="pc-cell ${cls}" ${clickable ? `onclick="selectPC(${n})"` : ''}>
+          <div class="pc-icon-sm">${_selectedPC === n ? '✅' : icon}</div>
+          <div class="pc-num-sm">PC${n}</div>
+        </div>`;
+      }).join('');
+
+      document.getElementById('studentPcSummary').innerHTML = `
+        <span class="pc-sum-pill avail">● ${availCount} Available</span>
+        <span class="pc-sum-pill occup">● ${occCount} Occupied</span>
+        <span class="pc-sum-pill reserv">● ${resCount + pendingSet.size} Reserved</span>
+      `;
+    }
+
+    function selectPC(n) {
+      _selectedPC = _selectedPC === n ? null : n;
+      renderStudentPCMap();
+    }
+
+    // ── Submit ────────────────────────────────────────────
+    function submitReservation() {
+      const lab     = document.getElementById('rLab').value;
+      const date    = document.getElementById('rDate').value;
+      const time    = document.getElementById('rTime').value;
+      const purpose = document.getElementById('rPurpose').value.trim();
+
+      if (!purpose)    { showToast('Please enter a purpose.', 'error'); return; }
+      if (!date)       { showToast('Please pick a date.', 'error'); return; }
+      if (!time)       { showToast('Please pick a time.', 'error'); return; }
+      if (!_selectedPC){ showToast('Please select a PC from the map.', 'error'); return; }
 
       db.run(
-        `INSERT INTO reservations (id_number, lab, computer_num, purpose, res_date, res_time)
-         VALUES (?,?,?,?,?,?)`,
-        [currentStudent.id_number, lab, parseInt(computer), purpose, date, time]
+        `INSERT INTO reservations (id_number, lab, computer_num, purpose, res_date, res_time) VALUES (?,?,?,?,?,?)`,
+        [currentStudent.id_number, lab, _selectedPC, purpose, date, time]
       );
       saveDB();
-      showToast('Reservation submitted!', 'success');
+      showToast('Reservation submitted successfully! ✅', 'success');
 
-      // Reset
-      document.getElementById('rLab').selectedIndex      = 0;
-      document.getElementById('rComputer').value         = '';
-      document.getElementById('rPurpose').selectedIndex  = 0;
-      document.getElementById('rTime').value             = '';
-
+      _selectedPC = null;
+      document.getElementById('rPurpose').selectedIndex = 0;
+      document.getElementById('rTime').value = '';
+      renderStudentPCMap();
       loadMyReservations();
     }
 
+    // ── My Reservations ──────────────────────────────────
     function loadMyReservations() {
       const r = db.exec(
-        `SELECT id_number, lab, computer_num, purpose, res_date, res_time, status
-         FROM reservations WHERE id_number=? ORDER BY rowid DESC`,
+        `SELECT lab, computer_num, res_date, res_time, purpose, status
+         FROM reservations WHERE id_number=? ORDER BY id DESC LIMIT 10`,
         [currentStudent.id_number]
       );
-      const container = document.getElementById('myReservations');
+      const el = document.getElementById('myResList');
       if (!r.length || !r[0].values.length) {
-        container.innerHTML = '<p style="color:#aaa;font-size:0.88rem;">No reservations yet.</p>';
+        el.innerHTML = '<div class="no-res">No reservations yet.</div>';
         return;
       }
-      container.innerHTML = r[0].values.map(row => `
-        <div class="history-item">
-          <div class="h-field"><strong>Lab:</strong> ${row[1]} &nbsp;|&nbsp; <strong>Computer #${row[2]}</strong></div>
-          <div class="h-field"><strong>Purpose:</strong> ${row[3]}</div>
-          <div class="h-field"><strong>Date:</strong> ${row[4]} &nbsp; <strong>Time:</strong> ${row[5]}</div>
-          <div class="h-field"><strong>Status:</strong>
-            <span class="status-${(row[6]||'pending').toLowerCase()}">${row[6] || 'Pending'}</span>
-          </div>
+      el.innerHTML = r[0].values.map(v => `
+        <div class="my-res-item">
+          <div class="my-res-title">Lab ${v[0]} – PC ${v[1]}</div>
+          <div class="my-res-meta">📅 ${v[2]} at ${v[3]} | <span class="purpose-tag">${v[4]}</span></div>
+          <span class="my-res-status ${(v[5]||'pending').toLowerCase()}">${v[5] || 'Pending'}</span>
         </div>`).join('');
     }
 
     function handleLogout() { sessionClear(); window.location.href = 'login.html'; }
-
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>

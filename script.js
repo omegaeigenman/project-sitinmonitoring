@@ -1,3 +1,19 @@
+// ── Dark Mode — apply EARLY to prevent flash ──────────────────
+(function() {
+  // Inject dark-mode.css link
+  const dmLink = document.createElement('link');
+  dmLink.rel = 'stylesheet';
+  dmLink.href = 'dark-mode.css';
+  dmLink.id = 'darkModeCss';
+  document.head.appendChild(dmLink);
+
+  // Apply saved preference immediately
+  if (localStorage.getItem('ccs_dark_mode') === '1') {
+    document.documentElement.classList.add('dark-mode');
+    document.addEventListener('DOMContentLoaded', () => document.body.classList.add('dark-mode'));
+  }
+})();
+
 // ── Navbar ────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   const hamburger = document.getElementById('hamburger');
@@ -14,10 +30,45 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('open'));
   });
 
+  // ── Inject dark mode toggle button into navbar ──
+  injectDarkModeToggle();
+
   // Inject notification badge on student nav after DB is ready
   // We defer so that initDB() called by the page has time to run.
   setTimeout(injectNotifNavBadge, 600);
 });
+
+// ── Dark Mode Toggle ─────────────────────────────────────────
+function injectDarkModeToggle() {
+  const nav = document.querySelector('.navbar');
+  if (!nav) return;
+
+  const isDark = localStorage.getItem('ccs_dark_mode') === '1';
+
+  const btn = document.createElement('button');
+  btn.className = 'dark-mode-toggle';
+  btn.id = 'darkModeBtn';
+  btn.innerHTML = isDark ? '☀️' : '🌙';
+  btn.title = 'Toggle dark mode';
+  btn.onclick = toggleDarkMode;
+
+  // Insert after the brand element (left side)
+  const brand = nav.querySelector('.dash-brand') || nav.querySelector('.admin-nav-brand') || nav.querySelector('.nav-brand');
+  if (brand) {
+    brand.parentNode.insertBefore(btn, brand.nextSibling);
+  } else {
+    nav.insertBefore(btn, nav.firstChild?.nextSibling || null);
+  }
+}
+
+function toggleDarkMode() {
+  const isDark = document.body.classList.toggle('dark-mode');
+  document.documentElement.classList.toggle('dark-mode', isDark);
+  localStorage.setItem('ccs_dark_mode', isDark ? '1' : '0');
+
+  const btn = document.getElementById('darkModeBtn');
+  if (btn) btn.innerHTML = isDark ? '☀️' : '🌙';
+}
 
 // ── Notification badge on top nav (student pages only) ────────
 function injectNotifNavBadge() {

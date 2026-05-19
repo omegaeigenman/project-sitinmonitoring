@@ -10,20 +10,55 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     /* Feedback modal */
-    .feedback-modal-box { max-width: 480px; text-align: left; }
-    .feedback-stars { display: flex; gap: 6px; margin-bottom: 0.5rem; }
+    .feedback-modal-box {
+      max-width: 480px;
+      text-align: left;
+    }
+
+    .feedback-stars {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 0.5rem;
+    }
+
     .feedback-stars span {
-      font-size: 1.6rem; cursor: pointer; color: #d1d5db; transition: color .15s;
+      font-size: 1.6rem;
+      cursor: pointer;
+      color: #d1d5db;
+      transition: color .15s;
     }
-    .feedback-stars span.active, .feedback-stars span:hover { color: #f59e0b; }
+
+    .feedback-stars span.active,
+    .feedback-stars span:hover {
+      color: #f59e0b;
+    }
+
     .feedback-textarea {
-      width: 100%; min-height: 90px; border: 1.5px solid #d0d4e8; border-radius: 6px;
-      font-family: inherit; font-size: 0.9rem; padding: 0.55rem 0.75rem; resize: vertical;
-      outline: none; box-sizing: border-box;
+      width: 100%;
+      min-height: 90px;
+      border: 1.5px solid #d0d4e8;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 0.55rem 0.75rem;
+      resize: vertical;
+      outline: none;
+      box-sizing: border-box;
     }
-    .feedback-textarea:focus { border-color: #2E4099; }
-    .feedback-info-row { font-size: 0.85rem; color: #555; margin-bottom: 0.6rem; }
-    .feedback-info-row strong { color: #1a1a2e; }
+
+    .feedback-textarea:focus {
+      border-color: #2E4099;
+    }
+
+    .feedback-info-row {
+      font-size: 0.85rem;
+      color: #555;
+      margin-bottom: 0.6rem;
+    }
+
+    .feedback-info-row strong {
+      color: #1a1a2e;
+    }
   </style>
 </head>
 
@@ -45,7 +80,8 @@
       <li><a href="admin_reservation.html">Reservation</a></li>
       <li><a href="admin_leaderboard.html">Leaderboard</a></li>
       <li><a href="admin_analytics.html">Analytics</a></li>
-      <li><a href="admin_rewards.html">Add Reward/Points</a></li>
+      <li><a href="admin_rewards.html">Rewards</a></li>
+      <li><a href="admin_software.html">Software</a></li>
       <li><a href="#" class="btn-logout-nav" onclick="adminLogout();return false;">Log out</a></li>
     </ul>
     <button class="hamburger" id="hamburger">&#9776;</button>
@@ -144,7 +180,8 @@
         <h3 class="modal-inner-title">&#128172; Student Feedback</h3>
         <button class="modal-close-x" onclick="skipFeedback()">&#x2715;</button>
       </div>
-      <p style="font-size:0.85rem;color:#555;margin-bottom:0.8rem;">Record feedback from the student before ending their session.</p>
+      <p style="font-size:0.85rem;color:#555;margin-bottom:0.8rem;">Record feedback from the student before ending their
+        session.</p>
       <div class="feedback-info-row"><strong>Student ID:</strong> <span id="fbStudentId"></span></div>
       <div class="feedback-info-row"><strong>Lab:</strong> <span id="fbLab"></span></div>
       <input type="hidden" id="fbRating" value="0" />
@@ -159,7 +196,8 @@
         </div>
       </div>
       <div style="margin-bottom:0.9rem;">
-        <label style="font-size:0.85rem;font-weight:500;color:#333;display:block;margin-bottom:0.35rem;">Message / Comment:</label>
+        <label style="font-size:0.85rem;font-weight:500;color:#333;display:block;margin-bottom:0.35rem;">Message /
+          Comment:</label>
         <textarea class="feedback-textarea" id="fbMessage" placeholder="Enter student feedback here..."></textarea>
       </div>
       <div class="modal-footer-row">
@@ -297,8 +335,8 @@
         _pendingSitId = sitId;
         const row = r[0].values[0];
         document.getElementById('fbStudentId').textContent = row[0];
-        document.getElementById('fbLab').textContent       = row[1];
-        document.getElementById('fbMessage').value         = '';
+        document.getElementById('fbLab').textContent = row[1];
+        document.getElementById('fbMessage').value = '';
         resetStars(0);
         openModal('feedbackModal');
       } else {
@@ -316,7 +354,7 @@
 
     function submitFeedback() {
       const message = document.getElementById('fbMessage').value.trim();
-      const rating  = parseInt(document.getElementById('fbRating').value) || 0;
+      const rating = parseInt(document.getElementById('fbRating').value) || 0;
       commitEndSession(_pendingSitId, message, document.getElementById('fbLab').textContent, rating);
       closeModal('feedbackModal');
     }
@@ -328,10 +366,27 @@
 
     function commitEndSession(sitId, message, lab, rating) {
       dbEndSitin(sitId);
+
+      // Always fetch the sit-in row for notification data
+      const info = db.exec('SELECT id_number, lab, purpose FROM sit_in WHERE id=?', [sitId]);
+      const id_number = (info.length && info[0].values.length) ? info[0].values[0][0] : '';
+      const labUsed = lab || ((info.length && info[0].values.length) ? info[0].values[0][1] : '');
+      const purpose = (info.length && info[0].values.length) ? info[0].values[0][2] : '';
+
+      // Push a "session ended" notification for the student
+      if (id_number) {
+        const key = 'ccs_sitin_ended_' + id_number;
+        const notifs = JSON.parse(localStorage.getItem(key) || '[]');
+        notifs.unshift({
+          id: 'ended_' + sitId,
+          lab: labUsed,
+          purpose: purpose,
+          date: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        });
+        localStorage.setItem(key, JSON.stringify(notifs));
+      }
+
       if (message) {
-        const info = db.exec('SELECT id_number, lab FROM sit_in WHERE id=?', [sitId]);
-        const id_number = (info.length && info[0].values.length) ? info[0].values[0][0] : '';
-        const labUsed   = lab || ((info.length && info[0].values.length) ? info[0].values[0][1] : '');
         // Ensure feedback table exists
         db.run(`CREATE TABLE IF NOT EXISTS feedback (
           id         INTEGER PRIMARY KEY AUTOINCREMENT,

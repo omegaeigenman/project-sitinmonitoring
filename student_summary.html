@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Sit-in Summary — CCS</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    body { background: #eef0f5; }
+    .page-wrap { max-width: 1060px; margin: 0 auto; padding: 1.4rem 1.2rem 2.5rem; }
+
+    /* ── Page header ── */
+    .summary-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.2rem; flex-wrap: wrap; gap: .7rem;
+    }
+    .summary-title {
+      font-size: 1.35rem; font-weight: 800; color: #1a1a2e;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .summary-title .icon {
+      color: #F5A800; font-size: 1.2rem;
+    }
+    .btn-export {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: #F5A800; color: #fff; border: none; border-radius: 8px;
+      padding: .55rem 1.1rem; font-family: inherit; font-size: .85rem;
+      font-weight: 700; cursor: pointer; transition: background .15s;
+      box-shadow: 0 2px 8px rgba(245,168,0,.35);
+    }
+    .btn-export:hover { background: #e09600; }
+
+    /* ── Stat cards ── */
+    .stat-row {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      gap: .9rem; margin-bottom: 1.4rem;
+    }
+    @media (max-width: 700px) { .stat-row { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 420px) { .stat-row { grid-template-columns: 1fr; } }
+
+    .stat-card {
+      background: #fff; border-radius: 12px;
+      border: 1.5px solid #dde3f0; padding: 1.1rem 1rem;
+      box-shadow: 0 2px 10px rgba(46,64,153,.07);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(46,64,153,.12); }
+    .stat-val {
+      font-size: 2rem; font-weight: 800; color: #1e2a6e; line-height: 1;
+      margin-bottom: .2rem;
+    }
+    .stat-lbl {
+      font-size: .72rem; font-weight: 600; color: #888;
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+
+    /* ── Session history card ── */
+    .history-card {
+      background: #fff; border-radius: 12px;
+      border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46,64,153,.07);
+      overflow: hidden;
+    }
+    .history-head {
+      background: #2E4099; color: #fff;
+      padding: .7rem 1.1rem; font-weight: 700; font-size: .92rem;
+      display: flex; align-items: center; gap: .45rem;
+    }
+    .history-body { padding: 1rem 1.1rem; }
+
+    /* ── Toolbar ── */
+    .tbl-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: .8rem; flex-wrap: wrap; gap: .5rem;
+    }
+    .tbl-show {
+      display: flex; align-items: center; gap: .35rem;
+      font-size: .82rem; color: #555;
+    }
+    .tbl-show select {
+      padding: .28rem .5rem; border: 1.5px solid #d0d4e8;
+      border-radius: 6px; font-family: inherit; font-size: .82rem;
+      outline: none; cursor: pointer;
+    }
+    .tbl-search {
+      padding: .36rem .7rem; border: 1.5px solid #d0d4e8;
+      border-radius: 7px; font-family: inherit; font-size: .82rem;
+      outline: none; width: 200px;
+    }
+    .tbl-search:focus { border-color: #2E4099; }
+    .tbl-search::placeholder { color: #b0b5cc; }
+
+    /* ── Table ── */
+    .tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e5e7eb; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+    .data-table thead tr { background: #f4f6fb; }
+    .data-table th {
+      padding: .6rem .85rem; text-align: left;
+      font-weight: 700; color: #1a1a2e;
+      border-bottom: 2px solid #e5e7eb;
+      white-space: nowrap; font-size: .78rem;
+      text-transform: uppercase; letter-spacing: .03em;
+    }
+    .data-table td {
+      padding: .55rem .85rem; border-bottom: 1px solid #f0f2f8;
+      color: #374151;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #f8faff; }
+    .tbl-empty { text-align: center; padding: 2rem; color: #aaa; font-size: .88rem; }
+
+    /* Status badges */
+    .badge {
+      display: inline-block; padding: .15rem .55rem;
+      border-radius: 12px; font-size: .74rem; font-weight: 600;
+    }
+    .badge-active { background: #dcfce7; color: #16a34a; }
+    .badge-done   { background: #ede9fe; color: #7c3aed; }
+
+    /* Table info */
+    .tbl-info { font-size: .78rem; color: #888; margin-top: .6rem; }
+  </style>
+</head>
+<body>
+  <nav class="navbar dash-navbar">
+    <div class="dash-brand" style="display:flex;align-items:center;gap:0.5rem;"><img src="CCS.png" alt="CCS" style="width:30px;height:30px;object-fit:contain;border-radius:50%;border:1.5px solid rgba(245,168,0,0.5);" onerror="this.style.display='none'"/><span>College of Computer Studies</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="student_notifications.html">Notifications</a></li>
+      <li><a href="dashboard.html">Home</a></li>
+      <li><a href="student_session.html">My Sessions</a></li>
+      <li><a href="student_history.html">History &amp; Feedback</a></li>
+      <li><a href="student_reservation.html">Reservation</a></li>
+      <li><a href="edit_profile.html">Edit Profile</a></li>
+      <li><a href="student_labstatus.html">Lab Status</a></li>
+      <li><a href="student_leaderboard.html">Leaderboard</a></li>
+      <li><a href="student_summary.html" class="active">My Summary</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="handleLogout()">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="page-wrap">
+    <!-- Header -->
+    <div class="summary-header">
+      <div class="summary-title">
+        <span class="icon">&#128202;</span> My Sit-in Summary
+      </div>
+      <button class="btn-export" onclick="exportCSV()">
+        &#128196; Export CSV
+      </button>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-val" id="statHours">0H</div>
+        <div class="stat-lbl">Total Sit-in Hours</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="statSessions">0</div>
+        <div class="stat-lbl">Total Sessions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="statAvg">0M</div>
+        <div class="stat-lbl">Avg Session Duration</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="statLongest">0M</div>
+        <div class="stat-lbl">Longest Session</div>
+      </div>
+    </div>
+
+    <!-- Session History -->
+    <div class="history-card">
+      <div class="history-head">&#128203; Session History</div>
+      <div class="history-body">
+        <div class="tbl-toolbar">
+          <div class="tbl-show">
+            Show
+            <select id="showEntries" onchange="renderTable()">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            entries
+          </div>
+          <input class="tbl-search" type="text" id="tblSearch" placeholder="&#128269; Search" oninput="renderTable()"/>
+        </div>
+        <div class="tbl-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time In</th>
+                <th>Time Out</th>
+                <th>Duration</th>
+                <th>Lab</th>
+                <th>PC # / Reservation</th>
+                <th>Purpose</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tblBody">
+              <tr><td colspan="8" class="tbl-empty">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tbl-info" id="tblInfo"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    let _allSitins = [];
+    let _studentId = '';
+
+    /* ── Formatting helpers ── */
+    function fmtDateOnly(dt) {
+      if (!dt) return '—';
+      try {
+        const d = new Date(dt.replace(' ','T') + (dt.includes('T') ? '' : 'Z'));
+        if (isNaN(d)) return dt;
+        return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+      } catch(e) { return dt; }
+    }
+    function fmtTimeOnly(dt) {
+      if (!dt) return '—';
+      try {
+        const d = new Date(dt.replace(' ','T') + (dt.includes('T') ? '' : 'Z'));
+        if (isNaN(d)) return dt;
+        return d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+      } catch(e) { return dt; }
+    }
+    function calcMins(ti, to) {
+      if (!ti || !to) return 0;
+      try {
+        const a = new Date(ti.replace(' ','T') + (ti.includes('T') ? '' : 'Z'));
+        const b = new Date(to.replace(' ','T') + (to.includes('T') ? '' : 'Z'));
+        return Math.max(0, Math.round((b - a) / 60000));
+      } catch(e) { return 0; }
+    }
+    function fmtDuration(mins) {
+      if (mins < 1) return '0m';
+      if (mins < 60) return mins + 'm';
+      return Math.floor(mins/60) + 'h ' + (mins%60) + 'm';
+    }
+
+    /* ── Compute stats ── */
+    function computeStats() {
+      const done = _allSitins.filter(s => s.time_out);
+      const totalSessions = _allSitins.length;
+      let totalMins = 0, longestMins = 0;
+
+      done.forEach(s => {
+        const m = calcMins(s.time_in, s.time_out);
+        totalMins += m;
+        if (m > longestMins) longestMins = m;
+      });
+
+      const avgMins = done.length ? Math.round(totalMins / done.length) : 0;
+      const totalHours = (totalMins / 60).toFixed(1);
+
+      document.getElementById('statHours').textContent = totalHours + 'H';
+      document.getElementById('statSessions').textContent = totalSessions;
+      document.getElementById('statAvg').textContent = fmtDuration(avgMins).toUpperCase();
+      document.getElementById('statLongest').textContent = fmtDuration(longestMins).toUpperCase();
+    }
+
+    /* ── Render table ── */
+    function renderTable() {
+      const q = (document.getElementById('tblSearch').value || '').toLowerCase();
+      const limit = parseInt(document.getElementById('showEntries').value);
+
+      let filtered = _allSitins;
+      if (q) {
+        filtered = filtered.filter(s =>
+          (s.purpose||'').toLowerCase().includes(q) ||
+          (s.lab||'').toLowerCase().includes(q) ||
+          (s.status||'').toLowerCase().includes(q) ||
+          fmtDateOnly(s.time_in).toLowerCase().includes(q)
+        );
+      }
+
+      const showing = filtered.slice(0, limit);
+      const tbody = document.getElementById('tblBody');
+
+      if (!showing.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="tbl-empty">No sit-in records found.</td></tr>';
+        document.getElementById('tblInfo').textContent = '';
+        return;
+      }
+
+      tbody.innerHTML = showing.map(s => {
+        const mins = calcMins(s.time_in, s.time_out);
+        const dur = s.time_out ? fmtDuration(mins) : '—';
+        const badgeClass = s.status === 'Active' ? 'badge-active' : 'badge-done';
+        return `
+          <tr>
+            <td>${fmtDateOnly(s.time_in)}</td>
+            <td>${fmtTimeOnly(s.time_in)}</td>
+            <td>${fmtTimeOnly(s.time_out)}</td>
+            <td>${dur}</td>
+            <td>${s.lab}</td>
+            <td>—</td>
+            <td>${s.purpose}</td>
+            <td><span class="badge ${badgeClass}">${s.status}</span></td>
+          </tr>`;
+      }).join('');
+
+      document.getElementById('tblInfo').textContent =
+        `Showing 1-${showing.length} of ${filtered.length}`;
+    }
+
+    /* ── Export CSV ── */
+    function exportCSV() {
+      if (!_allSitins.length) { showToast('No data to export.', 'error'); return; }
+      const headers = ['Date','Time In','Time Out','Duration','Lab','PC # / Reservation','Purpose','Status'];
+      const rows = _allSitins.map(s => {
+        const mins = calcMins(s.time_in, s.time_out);
+        return [
+          fmtDateOnly(s.time_in),
+          fmtTimeOnly(s.time_in),
+          fmtTimeOnly(s.time_out),
+          s.time_out ? fmtDuration(mins) : '',
+          s.lab, '', s.purpose, s.status
+        ].map(v => '"' + (v||'').replace(/"/g,'""') + '"').join(',');
+      });
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'sit_in_summary.csv';
+      a.click(); URL.revokeObjectURL(url);
+      showToast('CSV exported!', 'success');
+    }
+
+    /* ── Init ── */
+    async function init() {
+      const sess = sessionGet();
+      if (!sess) { window.location.href = 'login.html'; return; }
+      await initDB();
+      const s = dbGetStudent(sess.id_number);
+      if (!s) { sessionClear(); window.location.href = 'login.html'; return; }
+      _studentId = sess.id_number;
+
+      // Load all sit-ins for this student
+      const r = db.exec(
+        `SELECT id, purpose, lab, time_in, time_out, status
+         FROM sit_in WHERE id_number=? ORDER BY id DESC`, [_studentId]);
+      _allSitins = (r.length && r[0].values.length)
+        ? r[0].values.map(v => ({
+            id: v[0], purpose: v[1], lab: v[2],
+            time_in: v[3], time_out: v[4], status: v[5]
+          }))
+        : [];
+
+      computeStats();
+      renderTable();
+    }
+
+    function handleLogout() { sessionClear(); window.location.href = 'login.html'; }
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

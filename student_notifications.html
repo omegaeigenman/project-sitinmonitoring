@@ -51,6 +51,32 @@
     .notif-card.unread.type-alert  { border-left-color: #ef4444; }
     .notif-card.unread.type-res    { border-left-color: #10b981; }
     .notif-card.unread.type-pts    { border-left-color: #f59e0b; }
+    .notif-card.unread.type-sitin  { border-left-color: #6366f1; }
+    .notif-card.unread.type-ended  { border-left-color: #db2777; }
+
+    /* ── Active sit-in banner ── */
+    .sitin-active-banner {
+      display: flex; align-items: center; gap: .9rem;
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: #fff; border-radius: 12px;
+      padding: .85rem 1.1rem; margin-bottom: 1rem;
+      box-shadow: 0 4px 16px rgba(99,102,241,.35);
+      animation: pulseGlow 2.5s ease-in-out infinite;
+    }
+    @keyframes pulseGlow {
+      0%,100% { box-shadow: 0 4px 16px rgba(99,102,241,.35); }
+      50%      { box-shadow: 0 4px 28px rgba(99,102,241,.65); }
+    }
+    .sitin-banner-icon { font-size: 1.7rem; flex-shrink: 0; }
+    .sitin-banner-text { flex: 1; }
+    .sitin-banner-title { font-size: .95rem; font-weight: 700; margin-bottom: .15rem; }
+    .sitin-banner-sub   { font-size: .8rem;  opacity: .85; }
+    .sitin-live-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #86efac; flex-shrink: 0;
+      animation: liveBlink 1.2s ease-in-out infinite;
+    }
+    @keyframes liveBlink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
 
     .notif-card-inner {
       display: flex; align-items: flex-start; gap: .9rem; padding: .9rem 1rem;
@@ -64,6 +90,8 @@
     .icon-alert { background: #fee2e2; }
     .icon-res   { background: #d1fae5; }
     .icon-pts   { background: #fef3c7; }
+    .icon-sitin { background: #ede9fe; }
+    .icon-ended { background: #fce7f3; }
 
     .notif-content { flex: 1; min-width: 0; }
     .notif-title {
@@ -101,14 +129,17 @@
 </head>
 <body>
   <nav class="navbar dash-navbar">
-    <span class="dash-brand">&#127979; CCS Dashboard</span>
+    <div class="dash-brand" style="display:flex;align-items:center;gap:0.5rem;"><img src="CCS.png" alt="CCS" style="width:30px;height:30px;object-fit:contain;border-radius:50%;border:1.5px solid rgba(245,168,0,0.5);" onerror="this.style.display='none'"/><span>College of Computer Studies</span></div>
     <ul class="nav-links" id="navLinks">
+      <li><a href="student_notifications.html" class="active">Notifications</a></li>
       <li><a href="dashboard.html">Home</a></li>
       <li><a href="student_session.html">My Sessions</a></li>
       <li><a href="student_history.html">History &amp; Feedback</a></li>
       <li><a href="student_reservation.html">Reservation</a></li>
-      <li><a href="student_notifications.html" class="active">Notifications</a></li>
       <li><a href="edit_profile.html">Edit Profile</a></li>
+      <li><a href="student_labstatus.html">Lab Status</a></li>
+      <li><a href="student_leaderboard.html">Leaderboard</a></li>
+      <li><a href="student_summary.html">My Summary</a></li>
       <li><a href="#" class="btn-logout-nav" onclick="handleLogout()">Log out</a></li>
     </ul>
     <button class="hamburger" id="hamburger">&#9776;</button>
@@ -118,6 +149,16 @@
     <a href="dashboard.html" class="back-link">&#8592; Back to Dashboard</a>
     <div class="page-title">&#128276; Notifications &amp; Alerts</div>
 
+    <!-- Active Sit-in Banner (dynamic) -->
+    <div id="activeSitinBanner" style="display:none;" class="sitin-active-banner">
+      <div class="sitin-live-dot"></div>
+      <div class="sitin-banner-icon">&#128187;</div>
+      <div class="sitin-banner-text">
+        <div class="sitin-banner-title">You are currently sitting in!</div>
+        <div class="sitin-banner-sub" id="activeSitinBannerSub"></div>
+      </div>
+    </div>
+
     <!-- Summary pills -->
     <div class="notif-summary" id="notifSummary"></div>
 
@@ -125,6 +166,8 @@
     <div class="notif-toolbar">
       <button class="notif-filter-btn active" onclick="setFilter('all',   this)">All</button>
       <button class="notif-filter-btn"        onclick="setFilter('unread', this)">Unread</button>
+      <button class="notif-filter-btn"        onclick="setFilter('sitin', this)">&#128187; Sit-in</button>
+      <button class="notif-filter-btn"        onclick="setFilter('ended', this)">&#9989; Session Ended</button>
       <button class="notif-filter-btn"        onclick="setFilter('ann',   this)">&#128227; Announcements</button>
       <button class="notif-filter-btn"        onclick="setFilter('alert', this)">&#9888; Alerts</button>
       <button class="notif-filter-btn"        onclick="setFilter('res',   this)">&#128197; Reservations</button>
@@ -139,14 +182,15 @@
   <script src="db.js"></script>
   <script src="script.js"></script>
   <script>
-    let _items  = [];
-    let _filter = 'all';
-    let _read   = new Set(JSON.parse(localStorage.getItem('ccs_read_notifs') || '[]'));
-    let _student= null;
+    let _items       = [];
+    let _filter      = 'all';
+    let _read        = new Set(JSON.parse(localStorage.getItem('ccs_read_notifs') || '[]'));
+    let _student     = null;
+    let _activeSitin = null;
 
-    const ICON_MAP  = { ann:'&#128227;', alert:'&#9888;&#65039;', res:'&#128197;', pts:'&#11088;' };
-    const ICON_CLS  = { ann:'icon-ann', alert:'icon-alert', res:'icon-res', pts:'icon-pts' };
-    const TITLE_MAP = { ann:'Announcement', alert:'System Alert', res:'Reservation Update', pts:'Reward Points' };
+    const ICON_MAP  = { ann:'&#128227;', alert:'&#9888;&#65039;', res:'&#128197;', pts:'&#11088;', sitin:'&#128187;', ended:'&#9989;' };
+    const ICON_CLS  = { ann:'icon-ann', alert:'icon-alert', res:'icon-res', pts:'icon-pts', sitin:'icon-sitin', ended:'icon-ended' };
+    const TITLE_MAP = { ann:'Announcement', alert:'System Alert', res:'Reservation Update', pts:'Reward Points', sitin:'Currently Sitting In', ended:'Session Ended by Admin' };
 
     async function init() {
       const sess = sessionGet();
@@ -161,6 +205,42 @@
 
     function buildItems() {
       _items = [];
+
+      // 0. Active sit-in session
+      try {
+        const activeSitin = db.exec(
+          `SELECT id, lab, purpose, time_in FROM sit_in
+           WHERE id_number=? AND status='Active' ORDER BY id DESC LIMIT 1`,
+          [_student.id_number]);
+        if (activeSitin.length && activeSitin[0].values.length) {
+          const row = activeSitin[0].values[0];
+          const [sitId, sitLab, sitPurpose, sitTimeIn] = row;
+          _activeSitin = { id: sitId, lab: sitLab, purpose: sitPurpose, time_in: sitTimeIn };
+          _items.push({
+            id: 'sitin_active',
+            type: 'sitin',
+            body: `You are currently sitting in at Lab ${sitLab} for <strong>${sitPurpose}</strong>. Time in: ${sitTimeIn ? sitTimeIn.split('T')[0] || sitTimeIn.split(' ')[0] : '—'}.`,
+            date: sitTimeIn || 'Now'
+          });
+        } else {
+          _activeSitin = null;
+        }
+      } catch(e) { _activeSitin = null; }
+
+      // 0b. Admin-ended session notifications
+      try {
+        const key   = 'ccs_sitin_ended_' + _student.id_number;
+        const ended = JSON.parse(localStorage.getItem(key) || '[]');
+        ended.forEach(e => {
+          _items.push({
+            id:   e.id,
+            type: 'ended',
+            body: `Your sit-in session at <strong>Lab ${e.lab}</strong> for <strong>${e.purpose}</strong> was ended by the admin on ${e.date}.`,
+            date: e.date
+          });
+        });
+      } catch(e) {}
+
       // 1. Announcements
       const anns = JSON.parse(localStorage.getItem('ccs_announcements') || '[]');
       anns.forEach((a, i) => {
@@ -243,14 +323,28 @@
         }).join('');
       }
 
+      // Active sit-in banner
+      const bannerEl  = document.getElementById('activeSitinBanner');
+      const bannerSub = document.getElementById('activeSitinBannerSub');
+      if (_activeSitin) {
+        bannerEl.style.display = 'flex';
+        bannerSub.innerHTML = `Lab ${_activeSitin.lab} &mdash; ${_activeSitin.purpose}`;
+      } else {
+        bannerEl.style.display = 'none';
+      }
+
       // Summary pills
-      const unreadCount = _items.filter(n => !_read.has(n.id)).length;
-      const annCount    = _items.filter(n => n.type === 'ann').length;
-      const alertCount  = _items.filter(n => n.type === 'alert').length;
-      const resCount    = _items.filter(n => n.type === 'res').length;
-      const ptsCount    = _items.filter(n => n.type === 'pts').length;
+      const unreadCount  = _items.filter(n => !_read.has(n.id)).length;
+      const sitinCount   = _items.filter(n => n.type === 'sitin').length;
+      const endedCount   = _items.filter(n => n.type === 'ended').length;
+      const annCount     = _items.filter(n => n.type === 'ann').length;
+      const alertCount   = _items.filter(n => n.type === 'alert').length;
+      const resCount     = _items.filter(n => n.type === 'res').length;
+      const ptsCount     = _items.filter(n => n.type === 'pts').length;
       document.getElementById('notifSummary').innerHTML = [
         ['#ef4444', unreadCount + ' unread'],
+        ['#6366f1', sitinCount  + ' sit-in'],
+        ['#db2777', endedCount  + ' session(s) ended'],
         ['#2547a0', annCount    + ' announcement(s)'],
         ['#ef4444', alertCount  + ' alert(s)'],
         ['#10b981', resCount    + ' reservation update(s)'],

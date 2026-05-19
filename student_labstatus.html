@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab Status — CCS Sit-in Monitoring</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background: #f4f6fb;
+    }
+
+    .page-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.6rem 1.2rem 2.5rem;
+    }
+
+    /* ── Page Header ── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.6rem;
+    }
+
+    .page-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+
+    .page-title-icon {
+      font-size: 1.3rem;
+      background: #2E4099;
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-refresh {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: #22c55e;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: .55rem 1.1rem;
+      font-family: inherit;
+      font-size: .88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      box-shadow: 0 2px 8px rgba(34, 197, 94, .35);
+    }
+
+    .btn-refresh:hover {
+      background: #16a34a;
+      transform: translateY(-1px);
+    }
+
+    .btn-refresh:active {
+      transform: translateY(0);
+    }
+
+    /* ── Section Card ── */
+    .section-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1.5px solid #e5e7f0;
+      box-shadow: 0 2px 12px rgba(46, 64, 153, .07);
+      margin-bottom: 1.4rem;
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      padding: .85rem 1.2rem;
+      border-bottom: 1.5px solid #e5e7f0;
+      font-size: .95rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    .section-icon {
+      font-size: 1.15rem;
+      color: #ef4444;
+    }
+
+    .section-icon.software {
+      color: #2E4099;
+    }
+
+    .section-body {
+      padding: 1.2rem;
+    }
+
+    /* ── Lab Status Cards ── */
+    .lab-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .lab-card {
+      background: #fff;
+      border: 1.5px solid #e8eaf2;
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      transition: box-shadow .2s, border-color .2s, transform .15s;
+      cursor: default;
+    }
+
+    .lab-card:hover {
+      box-shadow: 0 4px 18px rgba(46, 64, 153, .12);
+      border-color: #c7cfe8;
+      transform: translateY(-2px);
+    }
+
+    .lab-card-top {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      margin-bottom: .7rem;
+    }
+
+    .lab-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: #f0f2fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .lab-info {
+      flex: 1;
+    }
+
+    .lab-name {
+      font-size: .88rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+
+    .lab-sub {
+      font-size: .76rem;
+      color: #888;
+      margin-top: .1rem;
+    }
+
+    /* Progress bar */
+    .lab-progress {
+      width: 100%;
+      height: 6px;
+      background: #e8eaf2;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: .45rem;
+    }
+
+    .lab-progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width .7s ease;
+    }
+
+    .lab-progress-fill.green {
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+    }
+
+    .lab-progress-fill.yellow {
+      background: linear-gradient(90deg, #f59e0b, #eab308);
+    }
+
+    .lab-progress-fill.orange {
+      background: linear-gradient(90deg, #f97316, #ea580c);
+    }
+
+    .lab-progress-fill.red {
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+    }
+
+    .lab-free-label {
+      font-size: .78rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+    }
+
+    .lab-free-label.green {
+      color: #16a34a;
+    }
+
+    .lab-free-label.yellow {
+      color: #ca8a04;
+    }
+
+    .lab-free-label.orange {
+      color: #ea580c;
+    }
+
+    .lab-free-label.red {
+      color: #dc2626;
+    }
+
+    /* ── Software Grid ── */
+    .software-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: .85rem;
+    }
+
+    .software-card {
+      display: flex;
+      align-items: flex-start;
+      gap: .75rem;
+      background: #fff;
+      border: 1.5px solid #e8eaf2;
+      border-radius: 10px;
+      padding: .9rem 1rem;
+      transition: box-shadow .2s, border-color .2s, transform .15s;
+      cursor: default;
+    }
+
+    .software-card:hover {
+      box-shadow: 0 4px 16px rgba(46, 64, 153, .1);
+      border-color: #c7cfe8;
+      transform: translateY(-2px);
+    }
+
+    .sw-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+
+    .sw-icon.blue {
+      background: #e0e7ff;
+      color: #3b5bdb;
+    }
+
+    .sw-icon.purple {
+      background: #ede9fe;
+      color: #7c3aed;
+    }
+
+    .sw-icon.orange {
+      background: #fff7ed;
+      color: #ea580c;
+    }
+
+    .sw-icon.green {
+      background: #ecfdf5;
+      color: #059669;
+    }
+
+    .sw-icon.red {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    .sw-icon.cyan {
+      background: #ecfeff;
+      color: #0891b2;
+    }
+
+    .sw-icon.pink {
+      background: #fdf2f8;
+      color: #db2777;
+    }
+
+    .sw-icon.teal {
+      background: #f0fdfa;
+      color: #0d9488;
+    }
+
+    .sw-icon.amber {
+      background: #fffbeb;
+      color: #d97706;
+    }
+
+    .sw-icon.indigo {
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+
+    .sw-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sw-name {
+      font-size: .88rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      text-transform: uppercase;
+      letter-spacing: .01em;
+      margin-bottom: .15rem;
+    }
+
+    .sw-desc {
+      font-size: .76rem;
+      color: #888;
+      margin-bottom: .5rem;
+    }
+
+    .sw-meta {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      flex-wrap: wrap;
+    }
+
+    .sw-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .2rem;
+      font-size: .68rem;
+      font-weight: 700;
+      padding: .18rem .5rem;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+
+    .sw-badge.installed {
+      background: #ecfdf5;
+      color: #059669;
+    }
+
+    .sw-badge.installed::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    .sw-badge.lab-tag {
+      background: #f0f2fa;
+      color: #4b5563;
+      border: 1px solid #e0e3ee;
+    }
+
+    /* ── Loading State ── */
+    .loading-placeholder {
+      text-align: center;
+      padding: 2rem;
+      color: #aaa;
+      font-size: .9rem;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 680px) {
+      .page-header {
+        flex-direction: column;
+        gap: .7rem;
+        align-items: flex-start;
+      }
+
+      .lab-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .software-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .lab-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar dash-navbar">
+    <div class="dash-brand" style="display:flex;align-items:center;gap:0.5rem;"><img src="CCS.png" alt="CCS" style="width:30px;height:30px;object-fit:contain;border-radius:50%;border:1.5px solid rgba(245,168,0,0.5);" onerror="this.style.display='none'"/><span>College of Computer Studies</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="student_notifications.html">Notifications</a></li>
+      <li><a href="dashboard.html">Home</a></li>
+      <li><a href="student_session.html">My Sessions</a></li>
+      <li><a href="student_history.html">History &amp; Feedback</a></li>
+      <li><a href="student_reservation.html">Reservation</a></li>
+      <li><a href="edit_profile.html">Edit Profile</a></li>
+      <li><a href="student_labstatus.html" class="active">Lab Status</a></li>
+      <li><a href="student_leaderboard.html">Leaderboard</a></li>
+      <li><a href="student_summary.html">My Summary</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="handleLogout()">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="page-wrap">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <span class="page-title-icon">&#128187;</span>
+        Software &amp; Lab Availability
+      </div>
+      <button class="btn-refresh" onclick="refreshData()">
+        &#128260; Refresh
+      </button>
+    </div>
+
+    <!-- Laboratory Status -->
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-icon">&#127959;</span>
+        Laboratory Status
+      </div>
+      <div class="section-body">
+        <div class="lab-grid" id="labGrid">
+          <div class="loading-placeholder">Loading lab status...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Available Software -->
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-icon software">&#128421;</span>
+        Available Software
+      </div>
+      <div class="section-body">
+        <div class="software-grid" id="softwareGrid">
+          <div class="loading-placeholder">Loading software list...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    /* ── Lab configuration ── */
+    const LABS = [
+      { id: '524', name: 'Laboratory 524', total: 40 },
+      { id: '526', name: 'Laboratory 526', total: 40 },
+      { id: '528', name: 'Laboratory 528', total: 40 },
+      { id: '530', name: 'Laboratory 530', total: 40 },
+    ];
+
+    /* ── Software catalog — reads from admin's localStorage registry ── */
+    const DEFAULT_SOFTWARE = [
+      { name: 'MS Office 365', desc: 'Word, Excel, PowerPoint', icon: '📘', color: 'blue', labs: 'All Labs' },
+      { name: 'Visual Studio Code', desc: 'Code editor & debugger', icon: '💻', color: 'cyan', labs: 'All Labs' },
+      { name: 'XAMPP', desc: 'Apache + MySQL + PHP', icon: '🟧', color: 'orange', labs: 'All Labs' },
+      { name: 'MySQL Workbench', desc: 'Database management tool', icon: '🗄️', color: 'green', labs: 'Lab 524, 526' },
+      { name: 'NetBeans IDE', desc: 'Java development', icon: '☕', color: 'teal', labs: 'Lab 524, 526' },
+      { name: 'IntelliJ IDEA', desc: 'JetBrains Java IDE', icon: '🔥', color: 'red', labs: 'Lab 524, 528' },
+      { name: 'Android Studio', desc: 'Android app development', icon: '📱', color: 'green', labs: 'Lab 524, 528' },
+      { name: 'Python 3.x', desc: 'Python interpreter & pip', icon: '🐍', color: 'amber', labs: 'All Labs' },
+      { name: 'Git', desc: 'Version control', icon: '🔀', color: 'purple', labs: 'All Labs' },
+      { name: 'Adobe Photoshop', desc: 'Image editing', icon: '🎨', color: 'blue', labs: 'Lab 524, 528' },
+      { name: 'Figma (Browser)', desc: 'UI/UX design tool', icon: '🖌️', color: 'pink', labs: 'All Labs' },
+      { name: 'Cisco Packet Tracer', desc: 'Network simulation', icon: '🌐', color: 'teal', labs: 'Lab 528' },
+      { name: 'Dev C++', desc: 'C/C++ compiler & IDE', icon: '⚙️', color: 'indigo', labs: 'All Labs' },
+      { name: 'Node.js', desc: 'JavaScript runtime', icon: '🟢', color: 'green', labs: 'All Labs' },
+      { name: 'Sublime Text', desc: 'Lightweight text editor', icon: '📝', color: 'amber', labs: 'Lab 526, 530' },
+      { name: 'FileZilla', desc: 'FTP client', icon: '📂', color: 'red', labs: 'Lab 524, 530' },
+    ];
+
+    const SW_STORAGE_KEY = 'ccs_registered_software';
+    const ICON_MAP = { 'Programming IDE':'💻','Office / Productivity':'📘','Utility / Tool':'🔧','Design Software':'🎨','Database Tool':'🗄️','Other':'📦' };
+    const COLOR_MAP = { 'Programming IDE':'cyan','Office / Productivity':'blue','Utility / Tool':'orange','Design Software':'pink','Database Tool':'green','Other':'gray' };
+
+    function loadSoftware() {
+      const saved = localStorage.getItem(SW_STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+      return [...DEFAULT_SOFTWARE];
+    }
+
+    /* ── Render labs ── */
+    function renderLabs() {
+      const grid = document.getElementById('labGrid');
+
+      // Count active sit-ins per lab from DB
+      const labOccupancy = {};
+      LABS.forEach(l => labOccupancy[l.id] = 0);
+
+      try {
+        const active = dbGetActiveSitins();
+        active.forEach(s => {
+          if (labOccupancy.hasOwnProperty(s.lab)) {
+            labOccupancy[s.lab]++;
+          }
+        });
+      } catch (e) { }
+
+      grid.innerHTML = LABS.map(lab => {
+        const occupied = labOccupancy[lab.id] || 0;
+        const free = Math.max(0, lab.total - occupied);
+        const pct = (free / lab.total) * 100;
+
+        let colorClass = 'green';
+        if (pct <= 25) colorClass = 'red';
+        else if (pct <= 50) colorClass = 'orange';
+        else if (pct <= 75) colorClass = 'yellow';
+
+        return `
+          <div class="lab-card">
+            <div class="lab-card-top">
+              <div class="lab-icon">🖥️</div>
+              <div class="lab-info">
+                <div class="lab-name">${lab.name}</div>
+                <div class="lab-sub">${free} / ${lab.total} PCs available</div>
+              </div>
+            </div>
+            <div class="lab-progress">
+              <div class="lab-progress-fill ${colorClass}" style="width: ${pct}%"></div>
+            </div>
+            <div class="lab-free-label ${colorClass}">
+              ${free} Free
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    /* ── Render software ── */
+    function renderSoftware() {
+      const grid = document.getElementById('softwareGrid');
+      const SOFTWARE = loadSoftware();
+      grid.innerHTML = SOFTWARE.map(sw => {
+        const icon = sw.icon || ICON_MAP[sw.cat] || '📦';
+        const color = sw.color || COLOR_MAP[sw.cat] || 'gray';
+        const labs = sw.labs || 'N/A';
+        return `
+        <div class="software-card">
+          <div class="sw-icon ${color}">${icon}</div>
+          <div class="sw-details">
+            <div class="sw-name">${sw.name}</div>
+            <div class="sw-desc">${sw.desc || sw.cat || ''}</div>
+            <div class="sw-meta">
+              <span class="sw-badge installed">Installed</span>
+              <span class="sw-badge lab-tag">${labs}</span>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    /* ── Refresh ── */
+    function refreshData() {
+      renderLabs();
+      showToast('Lab status refreshed!', 'success');
+    }
+
+    /* ── Init ── */
+    async function init() {
+      const sess = sessionGet();
+      if (!sess) { window.location.href = 'login.html'; return; }
+      await initDB();
+      const s = dbGetStudent(sess.id_number);
+      if (!s) { sessionClear(); window.location.href = 'login.html'; return; }
+
+      renderLabs();
+      renderSoftware();
+    }
+
+    function handleLogout() { sessionClear(); window.location.href = 'login.html'; }
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+
+</html>

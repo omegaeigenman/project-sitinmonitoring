@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Software App Import / Upload — CCS Admin</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    .admin-main {
+      max-width: 1280px;
+    }
+
+    .sw-page-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .sw-page-title .icon {
+      font-size: 1.1rem;
+      background: linear-gradient(135deg, #2E4099, #3b5bdb);
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── Layout ── */
+    .sw-layout {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 1.2rem;
+      align-items: start;
+    }
+
+    @media (max-width: 920px) {
+      .sw-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Card ── */
+    .sw-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46, 64, 153, .08);
+      overflow: hidden;
+    }
+
+    .sw-card-head {
+      padding: .7rem 1.1rem;
+      font-weight: 700;
+      font-size: .9rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+    }
+
+    .sw-card-head.upload {
+      background: linear-gradient(90deg, #059669, #10b981);
+    }
+
+    .sw-card-head.list {
+      background: linear-gradient(90deg, #1e3a6e, #2547a0);
+    }
+
+    .sw-card-body {
+      padding: 1.1rem;
+    }
+
+    /* ── Drop zone ── */
+    .drop-zone {
+      border: 2px dashed #d0d4e8;
+      border-radius: 12px;
+      padding: 1.6rem 1rem;
+      text-align: center;
+      transition: border-color .2s, background .2s;
+      cursor: pointer;
+      margin-bottom: 1rem;
+      background: #f8f9fc;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: #2E4099;
+      background: #eef1fb;
+    }
+
+    .drop-icon {
+      font-size: 2.5rem;
+      margin-bottom: .4rem;
+      color: #F5A800;
+    }
+
+    .drop-text {
+      font-size: .88rem;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .drop-sub {
+      font-size: .72rem;
+      color: #888;
+      margin-top: .2rem;
+    }
+
+    .drop-file-name {
+      font-size: .78rem;
+      color: #16a34a;
+      font-weight: 600;
+      margin-top: .5rem;
+      display: none;
+    }
+
+    /* ── Form fields ── */
+    .sw-field {
+      margin-bottom: .8rem;
+    }
+
+    .sw-label {
+      font-size: .8rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: .3rem;
+    }
+
+    .sw-input,
+    .sw-select,
+    .sw-textarea {
+      width: 100%;
+      border: 1.5px solid #d0d4e8;
+      border-radius: 7px;
+      padding: .5rem .75rem;
+      font-family: inherit;
+      font-size: .85rem;
+      background: #fff;
+      color: #1a1a2e;
+      outline: none;
+      transition: border-color .15s;
+      box-sizing: border-box;
+    }
+
+    .sw-input:focus,
+    .sw-select:focus,
+    .sw-textarea:focus {
+      border-color: #2E4099;
+      box-shadow: 0 0 0 3px rgba(46, 64, 153, .10);
+    }
+
+    .sw-input::placeholder,
+    .sw-textarea::placeholder {
+      color: #b0b5cc;
+    }
+
+    .sw-textarea {
+      height: 56px;
+      resize: vertical;
+    }
+
+    .sw-select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%232E4099' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right .75rem center;
+      padding-right: 2rem;
+    }
+
+    /* ── Lab checkboxes ── */
+    .lab-checks {
+      display: flex;
+      gap: .8rem;
+      flex-wrap: wrap;
+      margin-top: .3rem;
+    }
+
+    .lab-check-label {
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      font-size: .8rem;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+    }
+
+    .lab-check-label input[type="checkbox"] {
+      accent-color: #2E4099;
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    /* ── Upload button ── */
+    .sw-submit {
+      width: 100%;
+      padding: .6rem;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #059669, #10b981);
+      color: #fff;
+      font-family: inherit;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: .4rem;
+      transition: opacity .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+    }
+
+    .sw-submit:hover {
+      opacity: .88;
+    }
+
+    /* ── Search bar ── */
+    .sw-search-wrap {
+      padding: .6rem 1rem;
+      border-bottom: 1px solid #eef0f5;
+    }
+
+    .sw-search {
+      width: 100%;
+      border: 1.5px solid #d0d4e8;
+      border-radius: 7px;
+      padding: .42rem .7rem;
+      font-family: inherit;
+      font-size: .82rem;
+      background: #fff;
+      color: #1a1a2e;
+      outline: none;
+    }
+
+    .sw-search:focus {
+      border-color: #2E4099;
+    }
+
+    .sw-search::placeholder {
+      color: #b0b5cc;
+    }
+
+    /* ── Software list ── */
+    .sw-list {
+      max-height: 520px;
+      overflow-y: auto;
+    }
+
+    .sw-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .sw-list::-webkit-scrollbar-track {
+      background: #f5f5f5;
+    }
+
+    .sw-list::-webkit-scrollbar-thumb {
+      background: #c0c0c8;
+      border-radius: 3px;
+    }
+
+    .sw-row {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      padding: .7rem 1rem;
+      border-bottom: 1px solid #eef0f5;
+      transition: background .12s;
+    }
+
+    .sw-row:last-child {
+      border-bottom: none;
+    }
+
+    .sw-row:hover {
+      background: #f8f9ff;
+    }
+
+    .sw-row-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      flex-shrink: 0;
+    }
+
+    .sw-row-icon.blue {
+      background: #e0e7ff;
+      color: #3b5bdb;
+    }
+
+    .sw-row-icon.cyan {
+      background: #ecfeff;
+      color: #0891b2;
+    }
+
+    .sw-row-icon.orange {
+      background: #fff7ed;
+      color: #ea580c;
+    }
+
+    .sw-row-icon.green {
+      background: #ecfdf5;
+      color: #059669;
+    }
+
+    .sw-row-icon.teal {
+      background: #f0fdfa;
+      color: #0d9488;
+    }
+
+    .sw-row-icon.red {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    .sw-row-icon.purple {
+      background: #ede9fe;
+      color: #7c3aed;
+    }
+
+    .sw-row-icon.pink {
+      background: #fdf2f8;
+      color: #db2777;
+    }
+
+    .sw-row-icon.amber {
+      background: #fffbeb;
+      color: #d97706;
+    }
+
+    .sw-row-icon.indigo {
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+
+    .sw-row-icon.gray {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+
+    .sw-row-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sw-row-name {
+      font-size: .88rem;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .sw-row-cat {
+      font-size: .72rem;
+      color: #888;
+      margin-top: .1rem;
+    }
+
+    .sw-row-desc {
+      font-size: .72rem;
+      color: #555;
+      margin-top: .08rem;
+    }
+
+    .sw-badge-default {
+      font-size: .65rem;
+      font-weight: 700;
+      padding: .15rem .5rem;
+      border-radius: 10px;
+      background: #F5A800;
+      color: #fff;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .sw-btn-delete {
+      background: none;
+      border: none;
+      color: #ef4444;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: .2rem;
+      transition: transform .12s;
+      flex-shrink: 0;
+    }
+
+    .sw-btn-delete:hover {
+      transform: scale(1.2);
+    }
+
+    /* ── Lab Overview ── */
+    .lab-overview {
+      margin-top: 1.2rem;
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46, 64, 153, .08);
+      overflow: hidden;
+    }
+
+    .lab-overview-head {
+      background: linear-gradient(90deg, #1e3a6e, #2547a0);
+      padding: .7rem 1.1rem;
+      font-weight: 700;
+      font-size: .9rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+    }
+
+    .lab-overview-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: .8rem;
+      padding: 1.1rem;
+    }
+
+    @media (max-width: 600px) {
+      .lab-overview-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .lab-ov-card {
+      background: #f8f9fc;
+      border: 1.5px solid #dde3f0;
+      border-radius: 10px;
+      padding: .9rem .7rem;
+      text-align: center;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .lab-ov-card:hover {
+      border-color: #c7cfe8;
+      box-shadow: 0 2px 8px rgba(46, 64, 153, .1);
+    }
+
+    .lab-ov-name {
+      font-size: .78rem;
+      font-weight: 800;
+      color: #2E4099;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .lab-ov-count {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      margin: .15rem 0;
+    }
+
+    .lab-ov-lbl {
+      font-size: .68rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .sw-empty {
+      text-align: center;
+      padding: 1.5rem;
+      color: #aaa;
+      font-size: .85rem;
+    }
+  </style>
+</head>
+
+<body class="admin-body">
+  <nav class="navbar admin-navbar">
+    <div class="admin-nav-brand">
+      <img src="CCS.png" alt="CCS" class="admin-logo" onerror="this.style.display='none'" />
+      <span class="admin-brand">College of Computer Studies Admin</span>
+    </div>
+    <ul class="nav-links admin-nav" id="navLinks">
+      <li><a href="admin_dashboard.html">Home</a></li>
+      <li><a href="#" onclick="openModal('searchModal');return false;">Search</a></li>
+      <li><a href="admin_students.html">Students</a></li>
+      <li><a href="admin_sitin.html">Sit-in</a></li>
+      <li><a href="admin_sitin_records.html">Sit-in Records</a></li>
+      <li><a href="admin_reports.html">Sit-in Reports</a></li>
+      <li><a href="admin_feedback.html">Feedback Reports</a></li>
+      <li><a href="admin_reservation.html">Reservation</a></li>
+      <li><a href="admin_leaderboard.html">Leaderboard</a></li>
+      <li><a href="admin_analytics.html">Analytics</a></li>
+      <li><a href="admin_rewards.html">Rewards</a></li>
+      <li><a href="admin_software.html" class="active">Software</a></li>
+      <li><a href="#" class="btn-logout-nav" onclick="adminLogout();return false;">Log out</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+  </nav>
+
+  <div class="admin-main">
+    <div class="sw-page-title">
+      <span class="icon">&#128228;</span> Software App Import / Upload
+    </div>
+
+    <div class="sw-layout">
+      <!-- LEFT: Upload Form -->
+      <div>
+        <div class="sw-card">
+          <div class="sw-card-head upload">&#9729; Upload Software / File</div>
+          <div class="sw-card-body">
+            <!-- Drop zone -->
+            <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+              <input type="file" id="fileInput" style="display:none" accept=".zip,.exe,.msi,.apk,.pdf,.docx"
+                onchange="handleFileSelect(this)" />
+              <div class="drop-icon">&#9729;</div>
+              <div class="drop-text">Drag & drop files here</div>
+              <div class="drop-sub">or click to browse .zip, .exe, .msi, .apk, .pdf, .docx supported</div>
+              <div class="drop-file-name" id="fileName"></div>
+            </div>
+
+            <!-- Software Name -->
+            <div class="sw-field">
+              <div class="sw-label">Software / File Name</div>
+              <input class="sw-input" type="text" id="swName" placeholder="e.g. Visual Studio Code 1.88" />
+            </div>
+
+            <!-- Category -->
+            <div class="sw-field">
+              <div class="sw-label">Category</div>
+              <select class="sw-select" id="swCategory">
+                <option value="">Select category</option>
+                <option value="Programming IDE">Programming IDE</option>
+                <option value="Office / Productivity">Office / Productivity</option>
+                <option value="Utility / Tool">Utility / Tool</option>
+                <option value="Design Software">Design Software</option>
+                <option value="Database Tool">Database Tool</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <!-- Description -->
+            <div class="sw-field">
+              <div class="sw-label">Description</div>
+              <textarea class="sw-textarea" id="swDesc" placeholder="Brief description of this software"></textarea>
+            </div>
+
+            <!-- Available in Labs -->
+            <div class="sw-field">
+              <div class="sw-label">Available in Labs</div>
+              <div class="lab-checks">
+                <label class="lab-check-label"><input type="checkbox" value="Lab 524" /> Lab 524</label>
+                <label class="lab-check-label"><input type="checkbox" value="Lab 526" /> Lab 526</label>
+                <label class="lab-check-label"><input type="checkbox" value="Lab 528" /> Lab 528</label>
+                <label class="lab-check-label"><input type="checkbox" value="Lab 530" /> Lab 530</label>
+              </div>
+            </div>
+
+            <button class="sw-submit" onclick="uploadSoftware()">
+              &#9729; Upload & Register Software
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Registered Software -->
+      <div>
+        <div class="sw-card">
+          <div class="sw-card-head list">&#9776; Registered Software</div>
+          <div class="sw-search-wrap">
+            <input class="sw-search" type="text" id="swSearch" placeholder="&#128269; Search"
+              oninput="renderSoftwareList()" />
+          </div>
+          <div class="sw-list" id="swList">
+            <div class="sw-empty">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lab Software Overview -->
+    <div class="lab-overview">
+      <div class="lab-overview-head">&#128187; Lab Software Overview</div>
+      <div class="lab-overview-grid" id="labOverview"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
+  <script src="script.js"></script>
+  <script>
+    requireAdmin();
+
+    /* ── Default software catalog ── */
+    const DEFAULT_SOFTWARE = [
+      { name: 'MS Office 365', cat: 'Office / Productivity', labs: 'All Labs', desc: 'Word, Excel, PowerPoint', icon: '📘', color: 'blue' },
+      { name: 'Visual Studio Code', cat: 'Programming IDE', labs: 'All Labs', desc: 'Code editor & debugger', icon: '💻', color: 'cyan' },
+      { name: 'XAMPP', cat: 'Utility / Tool', labs: 'All Labs', desc: 'Apache + MySQL + PHP', icon: '🟧', color: 'orange' },
+      { name: 'MySQL Workbench', cat: 'Database Tool', labs: 'Lab 524, 530', desc: 'Database management tool', icon: '🗄️', color: 'green' },
+      { name: 'NetBeans IDE', cat: 'Programming IDE', labs: 'Lab 524, 526', desc: 'Java development', icon: '☕', color: 'teal' },
+      { name: 'IntelliJ IDEA', cat: 'Programming IDE', labs: 'Lab 524, 526', desc: 'JetBrains Java IDE', icon: '🔥', color: 'red' },
+      { name: 'Android Studio', cat: 'Programming IDE', labs: 'Lab 524, 528', desc: 'Android app development', icon: '📱', color: 'green' },
+      { name: 'Python 3.x', cat: 'Programming IDE', labs: 'All Labs', desc: 'Python interpreter & pip', icon: '🐍', color: 'amber' },
+      { name: 'Git', cat: 'Utility / Tool', labs: 'All Labs', desc: 'Version control', icon: '🔀', color: 'purple' },
+      { name: 'Adobe Photoshop', cat: 'Design Software', labs: 'Lab 528, 530', desc: 'Image editing', icon: '🎨', color: 'blue' },
+      { name: 'Figma (Browser)', cat: 'Design Software', labs: 'All Labs', desc: 'UI/UX design tool', icon: '🖌️', color: 'pink' },
+      { name: 'Cisco Packet Tracer', cat: 'Utility / Tool', labs: 'Lab 528', desc: 'Network simulation', icon: '🌐', color: 'teal' },
+    ];
+
+    const SW_STORAGE_KEY = 'ccs_registered_software';
+    const ICON_MAP = { 'Programming IDE': '💻', 'Office / Productivity': '📘', 'Utility / Tool': '🔧', 'Design Software': '🎨', 'Database Tool': '🗄️', 'Other': '📦' };
+    const COLOR_MAP = { 'Programming IDE': 'cyan', 'Office / Productivity': 'blue', 'Utility / Tool': 'orange', 'Design Software': 'pink', 'Database Tool': 'green', 'Other': 'gray' };
+
+    function loadSoftware() {
+      const saved = localStorage.getItem(SW_STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+      localStorage.setItem(SW_STORAGE_KEY, JSON.stringify(DEFAULT_SOFTWARE));
+      return [...DEFAULT_SOFTWARE];
+    }
+
+    function saveSoftware(list) { localStorage.setItem(SW_STORAGE_KEY, JSON.stringify(list)); }
+
+    function isDefault(sw) { return DEFAULT_SOFTWARE.some(d => d.name === sw.name); }
+
+    /* ── Render list ── */
+    function renderSoftwareList() {
+      const q = (document.getElementById('swSearch').value || '').toLowerCase();
+      const list = loadSoftware();
+      const filtered = q ? list.filter(s =>
+        s.name.toLowerCase().includes(q) || (s.cat || '').toLowerCase().includes(q) ||
+        (s.desc || '').toLowerCase().includes(q)
+      ) : list;
+
+      const el = document.getElementById('swList');
+      if (!filtered.length) { el.innerHTML = '<div class="sw-empty">No software found.</div>'; return; }
+
+      el.innerHTML = filtered.map((s, i) => {
+        const icon = s.icon || ICON_MAP[s.cat] || '📦';
+        const color = s.color || COLOR_MAP[s.cat] || 'gray';
+        const isDef = isDefault(s);
+        const labs = s.labs || 'N/A';
+        const catLab = (s.cat || '') + ' • ' + labs;
+        return `
+          <div class="sw-row">
+            <div class="sw-row-icon ${color}">${icon}</div>
+            <div class="sw-row-info">
+              <div class="sw-row-name">${s.name}</div>
+              <div class="sw-row-cat">${catLab}</div>
+              <div class="sw-row-desc">${s.desc || ''}</div>
+            </div>
+            ${isDef
+            ? '<span class="sw-badge-default">DEFAULT</span>'
+            : `<button class="sw-btn-delete" onclick="deleteSoftware('${s.name.replace(/'/g, "\\'")}')" title="Delete">&#9679;</button>`
+          }
+          </div>`;
+      }).join('');
+    }
+
+    /* ── Lab Overview ── */
+    function renderLabOverview() {
+      const list = loadSoftware();
+      const labs = ['Lab 524', 'Lab 526', 'Lab 528', 'Lab 530'];
+      const counts = {};
+      labs.forEach(l => counts[l] = 0);
+      list.forEach(s => {
+        const labStr = s.labs || '';
+        if (labStr.toLowerCase().includes('all')) {
+          labs.forEach(l => counts[l]++);
+        } else {
+          labs.forEach(l => { if (labStr.includes(l.replace('Lab ', ''))) counts[l]++; });
+        }
+      });
+      document.getElementById('labOverview').innerHTML = labs.map(l => `
+        <div class="lab-ov-card">
+          <div class="lab-ov-name">${l.toUpperCase().replace('LAB ', 'LAB ')}</div>
+          <div class="lab-ov-count">${counts[l]}</div>
+          <div class="lab-ov-lbl">Software</div>
+        </div>`).join('');
+    }
+
+    /* ── File handling ── */
+    let _selectedFile = null;
+
+    function handleFileSelect(inp) {
+      const file = inp.files[0];
+      if (!file) return;
+      _selectedFile = file;
+      const el = document.getElementById('fileName');
+      el.textContent = '📎 ' + file.name;
+      el.style.display = 'block';
+      // Auto-fill name if empty
+      if (!document.getElementById('swName').value) {
+        document.getElementById('swName').value = file.name.replace(/\.[^/.]+$/, '');
+      }
+    }
+
+    // Drag & drop
+    const dz = document.getElementById('dropZone');
+    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+    dz.addEventListener('drop', e => {
+      e.preventDefault(); dz.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        document.getElementById('fileInput').files = e.dataTransfer.files;
+        handleFileSelect(document.getElementById('fileInput'));
+      }
+    });
+
+    /* ── Upload / Register ── */
+    function uploadSoftware() {
+      const name = document.getElementById('swName').value.trim();
+      const cat = document.getElementById('swCategory').value;
+      const desc = document.getElementById('swDesc').value.trim();
+      const checks = [...document.querySelectorAll('.lab-checks input:checked')].map(c => c.value);
+
+      if (!name) { showToast('Enter a software name.', 'error'); return; }
+      if (!cat) { showToast('Select a category.', 'error'); return; }
+
+      const labs = checks.length === 4 ? 'All Labs' : checks.length ? checks.join(', ') : 'N/A';
+      const icon = ICON_MAP[cat] || '📦';
+      const color = COLOR_MAP[cat] || 'gray';
+
+      const list = loadSoftware();
+      if (list.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+        showToast('Software already registered!', 'error'); return;
+      }
+
+      const now = new Date();
+      list.push({ name, cat, labs, desc: desc || cat, icon, color, addedAt: now.toISOString().slice(0, 10) });
+      saveSoftware(list);
+
+      showToast(`"${name}" registered successfully!`, 'success');
+
+      // Reset form
+      document.getElementById('swName').value = '';
+      document.getElementById('swCategory').value = '';
+      document.getElementById('swDesc').value = '';
+      document.querySelectorAll('.lab-checks input').forEach(c => c.checked = false);
+      _selectedFile = null;
+      document.getElementById('fileName').style.display = 'none';
+
+      renderSoftwareList();
+      renderLabOverview();
+    }
+
+    /* ── Delete ── */
+    function deleteSoftware(name) {
+      if (!confirm(`Delete "${name}"?`)) return;
+      let list = loadSoftware().filter(s => s.name !== name);
+      saveSoftware(list);
+      showToast(`"${name}" removed.`, 'success');
+      renderSoftwareList();
+      renderLabOverview();
+    }
+
+    /* ── Init ── */
+    initDB().then(() => {
+      renderSoftwareList();
+      renderLabOverview();
+    });
+  </script>
+</body>
+
+</html>
