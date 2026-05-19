@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login — CCS Sit-in Monitoring</title>
-  <link rel="stylesheet" href="style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 </head>
+
 <body>
   <nav class="navbar">
     <div class="nav-brand">
-      <img src="CCS.png" alt="CCS Logo" class="nav-logo" onerror="this.style.display='none'"/>
+      <img src="CCS.png" alt="CCS Logo" class="nav-logo" onerror="this.style.display='none'" />
       <span class="nav-title">College of Computer Studies Sit-in Monitoring System</span>
     </div>
     <ul class="nav-links" id="navLinks">
@@ -32,22 +34,22 @@
 
   <div class="login-page">
     <div class="login-logo-side">
-      <img src="CCS.png" alt="CCS Logo" class="login-big-logo" onerror="this.style.display='none'"/>
+      <img src="CCS.png" alt="CCS Logo" class="login-big-logo" onerror="this.style.display='none'" />
     </div>
     <div class="login-form-side">
       <div class="login-field-group">
-        <input type="text" class="login-input" id="loginId" placeholder="Enter a valid id number"/>
+        <input type="text" class="login-input" id="loginId" placeholder="Enter a valid id number" />
         <label class="login-field-label">ID Number</label>
       </div>
       <div class="login-field-group">
         <div class="pw-wrap">
-          <input type="password" class="login-input" id="loginPass" placeholder="Enter password"/>
+          <input type="password" class="login-input" id="loginPass" placeholder="Enter password" />
           <button class="pw-toggle" type="button" onclick="togglePass('loginPass',this)">&#128065;</button>
         </div>
         <label class="login-field-label">Password</label>
       </div>
       <div class="login-options">
-        <label class="check-label"><input type="checkbox"/> Remember me</label>
+        <label class="check-label"><input type="checkbox" /> Remember me</label>
         <a href="#" class="forgot-link">Forgot password?</a>
       </div>
       <button class="login-btn" onclick="handleLogin()">Login</button>
@@ -69,14 +71,14 @@
   <script src="script.js"></script>
   <script>
     if (sessionGet()) window.location.href = 'dashboard.html';
-  //  if (localStorage.getItem('ccs_admin_session') === '1') window.location.href = 'admin_dashboard.html';
+    //  if (localStorage.getItem('ccs_admin_session') === '1') window.location.href = 'admin_dashboard.html';
 
     let dbReady = false;
     initDB().then(() => { dbReady = true; });
 
     function handleLogin() {
       if (!dbReady) { showToast('Loading, please try again.', 'error'); return; }
-      const id   = val('loginId');
+      const id = val('loginId');
       const pass = val('loginPass');
       if (!id || !pass) { showToast('Please enter your ID and password.', 'error'); return; }
 
@@ -101,4 +103,5 @@
     document.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
   </script>
 </body>
+
 </html>

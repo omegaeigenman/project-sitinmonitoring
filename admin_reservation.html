@@ -412,6 +412,30 @@
     function updateRes(id, status) {
       db.run('UPDATE reservations SET status=? WHERE id=?', [status, id]);
       saveDB();
+
+      // When accepted, create an active sit-in record so it shows on the Sit-in page
+      if (status === 'Accepted') {
+        const res = db.exec(
+          `SELECT r.id_number, r.purpose, r.lab, s.firstname, s.midname, s.lastname, s.session_cnt
+           FROM reservations r LEFT JOIN students s ON r.id_number = s.id_number
+           WHERE r.id = ?`, [id]
+        );
+        if (res.length && res[0].values.length) {
+          const row = res[0].values[0];
+          const id_number = row[0];
+          const purpose   = row[1];
+          const lab       = row[2];
+          const fullname  = [row[3], row[4], row[5]].filter(Boolean).join(' ');
+          const session   = row[6] || 0;
+
+          // Only add if student doesn't already have an active sit-in
+          const active = db.exec("SELECT id FROM sit_in WHERE id_number=? AND status='Active'", [id_number]);
+          if (!active.length || !active[0].values.length) {
+            dbAddSitin(id_number, fullname, purpose, lab, session);
+          }
+        }
+      }
+
       renderTable();
       renderPCMap();
       showToast(`Reservation ${status.toLowerCase()}.`, status === 'Accepted' ? 'success' : 'error');

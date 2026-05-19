@@ -1,18 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CCS Sit-in Monitoring System</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-</head>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    body { background: #eef0f5; }
+    .page-wrapper { max-width: 960px; margin: 0 auto; padding: 1.4rem 1rem 2rem; }
 
+    /* ── Hero Banner ── */
+    .hero-banner {
+      background: linear-gradient(135deg, #1e3a6e 0%, #2547a0 100%);
+      border-radius: 14px; padding: 2rem 2rem 1.8rem; color: #fff;
+      text-align: center; margin-bottom: 1.4rem;
+      box-shadow: 0 4px 20px rgba(30,58,110,.3);
+    }
+    .hero-banner h1 { font-size: 1.6rem; font-weight: 800; margin: 0 0 .4rem; }
+    .hero-banner p { font-size: .92rem; opacity: .85; margin: 0 0 1.2rem; }
+    .hero-btns { display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+    .hero-btn {
+      padding: .55rem 1.5rem; border-radius: 8px; font-size: .88rem; font-weight: 700;
+      text-decoration: none; border: none; cursor: pointer; font-family: inherit; transition: opacity .15s;
+    }
+    .hero-btn-primary { background: #f5a800; color: #1a1a2e; }
+    .hero-btn-secondary { background: rgba(255,255,255,.18); color: #fff; border: 1.5px solid rgba(255,255,255,.3); }
+    .hero-btn:hover { opacity: .85; }
+
+    /* ── Stats Row ── */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; margin-bottom: 1.4rem; }
+    @media (max-width: 600px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+    .stat-card {
+      background: #fff; border-radius: 10px; padding: .9rem; text-align: center;
+      border: 1px solid #dde3f0; box-shadow: 0 2px 8px rgba(46,64,153,.06);
+    }
+    .stat-card-icon { font-size: 1.4rem; margin-bottom: .3rem; }
+    .stat-card-num { font-size: 1.6rem; font-weight: 800; color: #1e3a6e; }
+    .stat-card-label { font-size: .75rem; color: #6b7280; font-weight: 600; }
+
+    /* ── Section Title ── */
+    .section-title {
+      font-size: 1.15rem; font-weight: 800; color: #1a1a2e;
+      display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem;
+    }
+
+    /* ── Leaderboard Card ── */
+    .lb-card {
+      background: #fff; border-radius: 12px; border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46,64,153,.08); overflow: hidden; margin-bottom: 1.4rem;
+    }
+    .lb-header {
+      background: linear-gradient(90deg, #1e3a6e, #2547a0); color: #fff;
+      padding: .7rem 1.1rem; font-weight: 700; font-size: .95rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+
+    /* Podium */
+    .lb-podium { display: flex; align-items: flex-end; justify-content: center; gap: .8rem; padding: 1.2rem 1rem .6rem; }
+    .podium-slot { display: flex; flex-direction: column; align-items: center; gap: .3rem; }
+    .podium-avatar {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff; font-weight: 700; font-size: .95rem;
+      display: flex; align-items: center; justify-content: center;
+      border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.18);
+    }
+    .podium-avatar.rank-1 { width: 58px; height: 58px; font-size: 1.1rem; background: linear-gradient(135deg, #f59e0b, #ef4444); }
+    .podium-avatar.rank-2 { background: linear-gradient(135deg, #6b7280, #374151); }
+    .podium-avatar.rank-3 { background: linear-gradient(135deg, #92400e, #b45309); }
+    .podium-name { font-size: .72rem; font-weight: 600; color: #1a1a2e; text-align: center; max-width: 70px; word-break: break-word; }
+    .podium-score { font-size: .7rem; color: #6b7280; }
+    .podium-bar { border-radius: 6px 6px 0 0; width: 52px; display: flex; align-items: flex-end; justify-content: center; font-size: .72rem; font-weight: 700; color: #fff; padding-bottom: 4px; }
+    .podium-bar.rank-1 { background: linear-gradient(180deg, #fbbf24, #f59e0b); height: 70px; }
+    .podium-bar.rank-2 { background: linear-gradient(180deg, #9ca3af, #6b7280); height: 50px; }
+    .podium-bar.rank-3 { background: linear-gradient(180deg, #d97706, #92400e); height: 38px; }
+
+    /* Table */
+    .lb-table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+    .lb-table thead tr { background: #f4f6fb; }
+    .lb-table th { padding: .6rem .85rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; font-size: .78rem; }
+    .lb-table td { padding: .52rem .85rem; border-bottom: 1px solid #f0f2f8; color: #374151; }
+    .lb-table tr:hover td { background: #f8faff; }
+    .lb-rank { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; font-weight: 800; font-size: .78rem; background: #f0f2f8; color: #6b7280; }
+    .lb-rank.r1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a2e; }
+    .lb-rank.r2 { background: linear-gradient(135deg, #9ca3af, #6b7280); color: #fff; }
+    .lb-rank.r3 { background: linear-gradient(135deg, #d97706, #92400e); color: #fff; }
+    .lb-name { font-weight: 700; color: #1a1a2e; }
+    .lb-score-badge { background: linear-gradient(90deg, #1e3a6e, #2547a0); color: #fff; border-radius: 20px; padding: .18rem .5rem; font-size: .74rem; font-weight: 700; }
+    .lb-empty { text-align: center; padding: 2rem; color: #aaa; font-size: .88rem; }
+
+    /* ── Announcement Card ── */
+    .ann-card {
+      background: #fff; border-radius: 12px; border: 1px solid #dde3f0;
+      box-shadow: 0 2px 12px rgba(46,64,153,.08); overflow: hidden;
+    }
+    .ann-header {
+      background: linear-gradient(90deg, #1e3a6e, #2547a0); color: #fff;
+      padding: .7rem 1.1rem; font-weight: 700; font-size: .95rem;
+    }
+    .ann-body { padding: .8rem 1.1rem; }
+    .ann-item { padding: .5rem 0; border-bottom: 1px solid #f0f2f8; }
+    .ann-item:last-child { border-bottom: none; }
+    .ann-meta { font-size: .75rem; color: #6b7280; margin-bottom: .3rem; }
+    .ann-text { font-size: .88rem; color: #374151; line-height: 1.55; }
+    .ann-empty { text-align: center; padding: 1.5rem; color: #aaa; font-size: .88rem; }
+  </style>
+</head>
 <body>
   <nav class="navbar">
     <div class="nav-brand">
-      <img src="CCS.png" alt="CCS Logo" class="nav-logo" />
+      <img src="CCS.png" alt="CCS Logo" class="nav-logo" onerror="this.style.display='none'"/>
       <span class="nav-title">College of Computer Studies Sit-in Monitoring System</span>
     </div>
     <ul class="nav-links" id="navLinks">
@@ -33,25 +131,85 @@
   </nav>
 
   <div class="page-wrapper">
-    <div class="announcement-box">
-      <div class="announcement-header">Announcement</div>
-      <div class="announcement-body">
-        <div class="ann-item">
-          <div class="ann-meta">CCS Admin | 2026-Feb-11</div>
-          <div class="ann-content empty"></div>
-        </div>
-        <div class="ann-item">
-          <div class="ann-meta">CCS Admin | 2024-May-08</div>
-          <div class="ann-content">
-            Important Announcement — We are excited to announce the launch of our new website! 🎉 Explore our latest
-            products and services now!
-          </div>
-        </div>
+    <!-- Hero -->
+    <div class="hero-banner">
+      <h1>&#127970; CCS Sit-in Monitoring System</h1>
+      <p>Track lab usage, manage sit-in sessions, and monitor student activity in real-time.</p>
+      <div class="hero-btns">
+        <a href="login.html" class="hero-btn hero-btn-primary">&#128187; Login</a>
+        <a href="register.html" class="hero-btn hero-btn-secondary">Create Account</a>
       </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-card-icon">&#128101;</div><div class="stat-card-num" id="sReg">0</div><div class="stat-card-label">Registered</div></div>
+      <div class="stat-card"><div class="stat-card-icon">&#128205;</div><div class="stat-card-num" id="sActive">0</div><div class="stat-card-label">Sitting In</div></div>
+      <div class="stat-card"><div class="stat-card-icon">&#128203;</div><div class="stat-card-num" id="sTotal">0</div><div class="stat-card-label">Total Sit-ins</div></div>
+      <div class="stat-card"><div class="stat-card-icon">&#127970;</div><div class="stat-card-num">5</div><div class="stat-card-label">Lab Rooms</div></div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="lb-card">
+      <div class="lb-header">&#127942; Student Leaderboard</div>
+      <div class="lb-podium" id="podium"></div>
+      <table class="lb-table">
+        <thead><tr><th>#</th><th>Student</th><th>Points</th><th>Hours</th><th>Tasks</th><th>Score</th></tr></thead>
+        <tbody id="lbBody"><tr><td colspan="6" class="lb-empty">Loading...</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- Announcements -->
+    <div class="ann-card">
+      <div class="ann-header">&#128227; Announcements</div>
+      <div class="ann-body" id="annList"><div class="ann-empty">Loading...</div></div>
     </div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <script src="db.js"></script>
   <script src="script.js"></script>
-</body>
+  <script>
+    initDB().then(() => {
+      try { document.getElementById('sReg').textContent = dbCountStudents(); } catch(e){}
+      try { document.getElementById('sActive').textContent = dbCountActiveSitins(); } catch(e){}
+      try { document.getElementById('sTotal').textContent = dbCountTotalSitins(); } catch(e){}
 
+      try {
+        dbEnsurePointsTable();
+        const lb = dbGetLeaderboard();
+        buildPodium(lb.slice(0,3));
+        buildTable(lb.slice(0,10));
+      } catch(e){ console.error(e); }
+
+      try {
+        const anns = JSON.parse(localStorage.getItem('ccs_announcements') || '[]');
+        const el = document.getElementById('annList');
+        const valid = anns.filter(a => a.text);
+        if (valid.length) {
+          el.innerHTML = valid.map(a => `<div class="ann-item"><div class="ann-meta">CCS Admin | ${a.date}</div><div class="ann-text">${a.text}</div></div>`).join('');
+        } else { el.innerHTML = '<div class="ann-empty">No announcements yet.</div>'; }
+      } catch(e){}
+    });
+
+    function getInitials(n) { return n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase(); }
+
+    function buildPodium(top3) {
+      const el = document.getElementById('podium');
+      if (!top3.length) { el.style.display='none'; return; }
+      const medals = ['&#129351;','&#129352;','&#129353;'];
+      const order = top3.length>=2 ? [top3[1],top3[0],top3[2]].filter(Boolean) : top3;
+      el.innerHTML = order.map((s,i) => {
+        const ri = i===0&&top3.length>=2?1:i===1?0:2;
+        return `<div class="podium-slot"><div>${medals[ri]||''}</div><div class="podium-avatar rank-${ri+1}">${getInitials(s.fullname)}</div><div class="podium-name">${s.fullname}</div><div class="podium-score">${s.score} pts</div><div class="podium-bar rank-${ri+1}">#${ri+1}</div></div>`;
+      }).join('');
+    }
+
+    function buildTable(rows) {
+      const tbody = document.getElementById('lbBody');
+      if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" class="lb-empty">No students yet. Be the first to register!</td></tr>'; return; }
+      tbody.innerHTML = rows.map((s,i) => `<tr><td><span class="lb-rank ${i<3?'r'+(i+1):''}">${i+1}</span></td><td><span class="lb-name">${s.fullname}</span></td><td>${s.earned}</td><td>${s.sitinHours}h</td><td>${s.tasks}</td><td><span class="lb-score-badge">${s.score}</span></td></tr>`).join('');
+    }
+  </script>
+</body>
 </html>

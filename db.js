@@ -1,58 +1,78 @@
 // ============================================================
-//  db.js — SQLite via sql.js (WebAssembly)
+//  db.js — MySQL via PHP API (replaces sql.js/localStorage)
+//  All functions keep the SAME signatures so HTML pages need
+//  zero changes.
 // ============================================================
-const DB_KEY = 'ccs_sqlite_db';
-let SQL = null;
-let db  = null;
 
-async function initDB() {
-  let waited = 0;
-  while (typeof initSqlJs === 'undefined') {
-    await new Promise(r => setTimeout(r, 100));
-    waited += 100;
-    if (waited > 10000) throw new Error('sql.js CDN failed to load');
+// ── API endpoint (auto-detect base URL) ──────────────────────
+const API_URL = (function() {
+  // Get the directory of the current page
+  const path = window.location.pathname;
+  const dir = path.substring(0, path.lastIndexOf('/') + 1);
+  return window.location.origin + dir + 'api.php';
+})();
+
+// ── The global `db` object — mimics sql.js API ───────────────
+// HTML pages call db.exec(sql, params) and db.run(sql, params)
+// We proxy these to the PHP backend via synchronous XHR
+const db = {
+  exec: function(sql, params) {
+    const response = apiCall('exec', sql, params || []);
+    // sql.js returns array of {columns, values} — we match that format
+    return response.results || [];
+  },
+
+  run: function(sql, params) {
+    const response = apiCall('run', sql, params || []);
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    return response;
   }
-  SQL = await initSqlJs({
-    locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}`
-  });
-  const saved = localStorage.getItem(DB_KEY);
-  if (saved) {
-    db = new SQL.Database(Uint8Array.from(atob(saved), c => c.charCodeAt(0)));
-  } else {
-    db = new SQL.Database();
+};
+
+// ── Synchronous XHR to PHP API ───────────────────────────────
+function apiCall(action, sql, params) {
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', API_URL, false); // false = synchronous
+  xhr.setRequestHeader('Content-Type', 'application/json');
+
+  try {
+    xhr.send(JSON.stringify({ action, sql, params }));
+    if (xhr.status === 200) {
+      return JSON.parse(xhr.responseText);
+    } else {
+      console.error('API error:', xhr.status, xhr.responseText);
+      return { results: [], error: 'HTTP ' + xhr.status };
+    }
+  } catch (e) {
+    console.error('API call failed:', e);
+    return { results: [], error: e.message };
   }
-  db.run(`CREATE TABLE IF NOT EXISTS students (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_number   TEXT UNIQUE NOT NULL,
-    lastname    TEXT NOT NULL,
-    firstname   TEXT NOT NULL,
-    midname     TEXT DEFAULT '',
-    course      TEXT NOT NULL,
-    year_level  TEXT NOT NULL,
-    email       TEXT UNIQUE NOT NULL,
-    address     TEXT NOT NULL,
-    username    TEXT UNIQUE NOT NULL,
-    password    TEXT NOT NULL,
-    session_cnt INTEGER DEFAULT 30,
-    created_at  TEXT DEFAULT (datetime('now'))
-  )`);
-  db.run(`CREATE TABLE IF NOT EXISTS sit_in (
-    id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_number TEXT NOT NULL,
-    name      TEXT NOT NULL,
-    purpose   TEXT NOT NULL,
-    lab       TEXT NOT NULL,
-    session   INTEGER,
-    status    TEXT DEFAULT 'Active',
-    time_in   TEXT DEFAULT (datetime('now')),
-    time_out  TEXT
-  )`);
-  saveDB();
 }
 
+// ── initDB — verify PHP backend is reachable ─────────────────
+async function initDB() {
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', API_URL, false);
+    xhr.send();
+    if (xhr.status === 200) {
+      const resp = JSON.parse(xhr.responseText);
+      if (resp.ok) {
+        console.log('✅ Connected to MySQL database');
+        return;
+      }
+    }
+    console.error('❌ Cannot reach API:', xhr.responseText);
+  } catch (e) {
+    console.error('❌ Cannot reach MySQL API:', e.message);
+  }
+}
+
+// ── saveDB — no-op (MySQL auto-persists) ─────────────────────
 function saveDB() {
-  const data = db.export();
-  localStorage.setItem(DB_KEY, btoa(String.fromCharCode(...data)));
+  // No-op: MySQL automatically persists data
 }
 
 // ── Students ─────────────────────────────────────────────────
@@ -61,14 +81,13 @@ function dbRegister(s) {
     db.run(`INSERT INTO students (id_number,lastname,firstname,midname,course,year_level,email,address,username,password)
             VALUES (?,?,?,?,?,?,?,?,?,?)`,
       [s.id_number,s.lastname,s.firstname,s.midname||'',s.course,s.year_level,s.email,s.address,s.username,s.password]);
-    saveDB();
     return { ok: true };
   } catch(e) {
     const m = e.message||'';
-    if (m.includes('id_number')) return { ok:false, error:'ID Number already registered.' };
+    if (m.includes('id_number') || m.includes('Duplicate') && m.includes('id_number')) return { ok:false, error:'ID Number already registered.' };
     if (m.includes('email'))     return { ok:false, error:'Email already registered.' };
     if (m.includes('username'))  return { ok:false, error:'Username already taken.' };
-    return { ok:false, error:'Registration failed.' };
+    return { ok:false, error:'Registration failed: ' + m };
   }
 }
 
@@ -91,7 +110,6 @@ function dbUpdateStudent(id_number, d) {
   try {
     db.run(`UPDATE students SET lastname=?,firstname=?,midname=?,course=?,year_level=?,email=?,address=?,username=?,password=? WHERE id_number=?`,
       [d.lastname,d.firstname,d.midname||'',d.course,d.year_level,d.email,d.address,d.username,d.password,id_number]);
-    saveDB();
     return { ok: true };
   } catch(e) {
     const m = e.message||'';
@@ -103,12 +121,10 @@ function dbUpdateStudent(id_number, d) {
 
 function dbDeleteStudent(id_number) {
   db.run('DELETE FROM students WHERE id_number=?', [id_number]);
-  saveDB();
 }
 
 function dbResetAllSessions() {
   db.run('UPDATE students SET session_cnt=30');
-  saveDB();
 }
 
 function dbCountStudents() {
@@ -141,12 +157,10 @@ function dbAddSitin(id_number, name, purpose, lab, session) {
   db.run(`INSERT INTO sit_in (id_number,name,purpose,lab,session,status) VALUES (?,?,?,?,?,'Active')`,
     [id_number, name, purpose, lab, session]);
   db.run('UPDATE students SET session_cnt=session_cnt-1 WHERE id_number=?', [id_number]);
-  saveDB();
 }
 
 function dbEndSitin(sitId) {
-  db.run("UPDATE sit_in SET status='Done', time_out=datetime('now') WHERE id=?", [sitId]);
-  saveDB();
+  db.run("UPDATE sit_in SET status='Done', time_out=NOW() WHERE id=?", [sitId]);
 }
 
 // Pie chart data: sit-ins grouped by programming language (purpose)
@@ -158,53 +172,49 @@ function dbGetSitinsByPurpose() {
 
 // ── Points / Rewards ─────────────────────────────────────────
 function dbEnsurePointsTable() {
+  // Table is created by db_setup.php, but just in case:
   db.run(`CREATE TABLE IF NOT EXISTS student_points (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_number  TEXT NOT NULL,
-    points     INTEGER NOT NULL DEFAULT 0,
-    reason     TEXT DEFAULT '',
-    awarded_at TEXT DEFAULT (datetime('now'))
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    id_number  VARCHAR(50) NOT NULL,
+    points     INT NOT NULL DEFAULT 0,
+    reason     VARCHAR(500) DEFAULT '',
+    awarded_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 }
 
 function dbAddPoints(id_number, points, reason) {
-  dbEnsurePointsTable();
   db.run('INSERT INTO student_points (id_number, points, reason) VALUES (?,?,?)',
     [id_number, points, reason || '']);
-  saveDB();
 }
 
 function dbGetTotalPoints(id_number) {
-  dbEnsurePointsTable();
   const r = db.exec('SELECT COALESCE(SUM(points),0) FROM student_points WHERE id_number=?', [id_number]);
   return r.length ? (r[0].values[0][0] || 0) : 0;
 }
 
 function dbGetPointsLog(id_number) {
-  dbEnsurePointsTable();
   const r = db.exec('SELECT points, reason, awarded_at FROM student_points WHERE id_number=? ORDER BY id DESC LIMIT 20', [id_number]);
   return (r.length && r[0].values.length) ? r[0].values.map(v => ({ points: v[0], reason: v[1], awarded_at: v[2] })) : [];
 }
 
 // Leaderboard: weighted score = 50% earned_pts + 30% sitin_hours + 20% task_completions
 function dbGetLeaderboard() {
-  dbEnsurePointsTable();
   const students = dbGetAllStudents();
   return students.map(s => {
     // Earned points
     const rp = db.exec('SELECT COALESCE(SUM(points),0) FROM student_points WHERE id_number=?', [s.id_number]);
     const earned = rp.length ? (rp[0].values[0][0] || 0) : 0;
 
-    // Sit-in hours (count done sit-ins as proxy for hours; real hours need time_out)
+    // Sit-in hours
     const rh = db.exec(
       `SELECT COUNT(*),
         SUM(CASE WHEN time_out IS NOT NULL
-            THEN CAST((julianday(time_out) - julianday(time_in)) * 24 AS INTEGER)
+            THEN TIMESTAMPDIFF(HOUR, time_in, time_out)
             ELSE 0 END)
        FROM sit_in WHERE id_number=? AND status='Done'`, [s.id_number]);
     const sitinHours = (rh.length && rh[0].values[0][1]) ? parseInt(rh[0].values[0][1]) : 0;
 
-    // Task completions = number of completed (Done) sit-ins for now
+    // Task completions = number of completed (Done) sit-ins
     const rc = db.exec(`SELECT COUNT(*) FROM sit_in WHERE id_number=? AND status='Done'`, [s.id_number]);
     const tasks = rc.length ? (rc[0].values[0][0] || 0) : 0;
 
@@ -214,13 +224,13 @@ function dbGetLeaderboard() {
   }).sort((a, b) => b.score - a.score);
 }
 
-// Sit-ins per day for last 7 days (analytics)
+// Sit-ins per day for last N days (analytics)
 function dbGetSitinsPerDay(days) {
   const result = [];
   for (let i = days - 1; i >= 0; i--) {
     const r = db.exec(
       `SELECT COUNT(*) FROM sit_in
-       WHERE date(time_in) = date('now', '-${i} days')`
+       WHERE DATE(time_in) = DATE_SUB(CURDATE(), INTERVAL ${i} DAY)`
     );
     const cnt = r.length ? (r[0].values[0][0] || 0) : 0;
     const d = new Date();
@@ -231,6 +241,7 @@ function dbGetSitinsPerDay(days) {
 }
 
 // ── Profile Picture ───────────────────────────────────────────
+// Stays in localStorage (per-browser, base64 data)
 function saveProfilePic(id_number, base64) {
   localStorage.setItem('ccs_pic_' + id_number, base64);
 }
@@ -239,6 +250,7 @@ function getProfilePic(id_number) {
 }
 
 // ── Session ───────────────────────────────────────────────────
+// Stays in localStorage (per-browser login state)
 function sessionSet(student) {
   localStorage.setItem('ccs_session', JSON.stringify({
     id_number: student.id_number,
